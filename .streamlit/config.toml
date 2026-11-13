@@ -1,0 +1,22 @@
+# Colors and fonts for the web page.
+# Calm grey dark theme with one blue accent (unslop pass).
+
+[theme]
+base = "dark"
+primaryColor = "#7AA2F7"             # the one accent: slider, focus, links
+backgroundColor = "#141415"          # page
+secondaryBackgroundColor = "#19191b" # inputs, boxes, table
+textColor = "#ededed"
+borderColor = "#2a2a2d"              # quiet hairlines
+linkColor = "#7AA2F7"
+codeBackgroundColor = "#19191b"
+font = "sans-serif"                  # fonts bundled with Streamlit, work offline
+codeFont = "monospace"
+baseRadius = "8px"
+
+[client]
+toolbarMode = "minimal"              # hide the developer menu
+
+# Calmer headings: page title, then section titles (h1..h3).
+headingFontWeights = [500, 500, 500]
+headingFontSizes = ["2rem", "1.5rem", "1.25rem"]

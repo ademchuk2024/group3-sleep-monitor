@@ -1,0 +1,6 @@
+# Exact versions that were tested together, so the online server installs the same ones.
+streamlit==1.67.0
+pandas==3.1.1
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2

@@ -1,0 +1,15 @@
+# Files that should NOT go to GitHub
+
+# The virtual environment (big, and each computer makes its own)
+.venv/
+
+# Python's temporary files
+__pycache__/
+*.pyc
+
+# Mac Finder files
+.DS_Store
+
+# Never upload real recordings by accident (the sample file is allowed)
+*.csv
+!sample_data/sample_night.csv
