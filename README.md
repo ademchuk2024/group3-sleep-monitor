@@ -1,54 +1,54 @@
-# IMU Sleep Monitor (Group 3, Person 5 test case)
+# IMU Sleep Monitor
 
-A small web app for our Engineering Design 1 project, *Wearable IMU-Based System for
-Continuous Sleep and Movement Monitoring*. You upload a recorded IMU CSV file
-and it shows a sleep timeline and summary.
+This is a web app for our Engineering Design 1 project (Group 3). The project is a wearable IMU system that monitors sleep and movement. My part is the web app. You upload a recorded IMU file (CSV) and the app shows a sleep timeline and a summary of the night.
 
-**Cost: $0.** It runs on a laptop, or online for free on Streamlit Community Cloud.
+Live app: https://group3-sleep-monitor-whypcy7pqmmbzirsop6aii.streamlit.app/
 
-> ⚠️ The sleep stages are **fake** for now. `model.py` is a placeholder until the
-> team's trained model is ready.
+Right now the sleep stages are fake. The model in `model.py` is a placeholder until the team's real model is ready.
 
-## Where this fits in our project
+## How it works
 
-This is stage 4 of our block diagram, *Cloud Processing and Tool Implementation*
-(Person 5, Anna). It connects to the other parts like this:
+1. The user uploads a CSV file (or clicks "Try sample night").
+2. The app checks the file and shows an error if something is wrong.
+3. It cleans the data and cuts it into 5-second windows.
+4. It makes a spectrogram for each window with SciPy.
+5. The model gives each window a sleep stage and a confidence score.
+6. The page shows the timeline, the time spent in each stage, and a list of low-confidence windows.
 
-| Team part | Who | How it plugs in here |
-|-----------|-----|----------------------|
-| Data preprocessing and spectrograms | Khizer | Replace the functions in `preprocess.py` with the real code, so uploads are processed exactly like the training data |
-| CNN, LSTM/Transformer and DNN models | Madison, Zeporah, Amari | The best model replaces `predict_stages()` in `model.py` |
-| Hardware and data collection | Madison | The sensor's CSV export should use the column names below |
-| Results and visualization (stage 5) | Anna | The timeline, summary tiles and confidence flags on the page |
+The uploaded file is only read into memory. The app never saves it to disk.
 
-**How to review:** start with `config.py` (settings), then `preprocess.py`, `model.py`
-and `app.py`. Every file has short comments explaining each step. Leave questions as
-GitHub Issues or comments on a pull request.
+## How to run it
 
-## What happens to a file
+You need Python 3.10 or newer. I used Python 3.12.
 
+Open Terminal and go to the project folder, then run these commands one at a time:
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python sample_data/make_sample.py
+streamlit run app.py
 ```
-CSV upload -> check the file -> clean -> cut into 5-second windows
-           -> spectrogram per window (SciPy STFT) -> model -> timeline + summary
+
+The app opens in your browser at http://localhost:8501. To stop it, press Ctrl + C in Terminal.
+
+The next time you want to run it, you only need the last two lines:
+
+```bash
+source .venv/bin/activate
+streamlit run app.py
 ```
-
-Uploads stay in memory only. They are never saved to disk.
-
-## Files
-
-| File | What it does |
-|------|--------------|
-| `config.py` | All settings: sampling rate (50 Hz), window length (5 s), confidence threshold, colors |
-| `preprocess.py` | Checks the CSV, cleans it, makes windows and spectrograms |
-| `model.py` | **Placeholder** model: `predict_stages(spectrograms)` returns fake stages + confidence |
-| `app.py` | The web page (Streamlit) |
-| `.streamlit/config.toml` | Page colors and fonts (hidden folder: press `Cmd + Shift + .` in Finder to see it) |
-| `sample_data/make_sample.py` | Makes a fake 30-minute recording, `sample_night.csv` |
-| `requirements.txt` | The Python packages the app needs |
 
 ## CSV format
 
-One row per sensor reading. Column names must be:
+The file needs these columns:
+
+- `timestamp`: seconds since the start of the recording
+- `ax`, `ay`, `az`: accelerometer (g)
+- `gx`, `gy`, `gz`: gyroscope (degrees per second)
+
+Example:
 
 ```
 timestamp,ax,ay,az,gx,gy,gz
@@ -56,127 +56,33 @@ timestamp,ax,ay,az,gx,gy,gz
 0.02,0.1411,-0.2927,0.8047,-3.6462,0.5472,-5.7396
 ```
 
-- `timestamp` = seconds since the start
-- `ax, ay, az` = accelerometer (g)
-- `gx, gy, gz` = gyroscope (degrees per second)
+The app expects 50 readings per second. You can change this in `config.py`.
 
-## Install (one time)
+## Files
 
-You need Python 3.10 or newer. Open the **Terminal** app and go into this folder
-(drag the folder onto the Terminal window after typing `cd ` and a space):
+- `app.py`: the web page
+- `config.py`: settings like sampling rate, window length, and the confidence threshold
+- `preprocess.py`: checks and cleans the CSV, makes windows and spectrograms
+- `model.py`: the placeholder model
+- `sample_data/make_sample.py`: makes a fake 30-minute recording
+- `requirements.txt`: the Python packages the app needs
 
-```bash
-cd ~/group3-sleep-monitor
-```
+## For teammates
 
-Check your Python version:
+To use the real preprocessing code (Khizer), replace the functions in `preprocess.py`: `read_and_check`, `clean`, `make_windows`, and `make_spectrograms`. Keep the same inputs and outputs.
 
-```bash
-python3 --version
-```
+To use the real model, replace `predict_stages()` in `model.py`, then set `IS_PLACEHOLDER = False`.
+- Input: spectrograms shaped (windows, 6 channels, 26 frequencies, 9 time steps)
+- Output: a list of stage names (awake, light, deep, REM) and a list of confidence scores from 0 to 1, one of each per window
 
-If it says 3.8 or 3.9, use `python3.12` (or another 3.10+ version you have) in the next command
-instead of `python3`.
+If the real spectrograms are a different size, the model has to be trained on that size.
 
-Make a private box for this project's packages (a "virtual environment"):
+Madison's sensor should save its data as a CSV with the columns above.
 
-```bash
-python3 -m venv .venv
-```
+## Putting it online
 
-Turn it on. You will see `(.venv)` at the start of the line:
+The app is hosted for free on Streamlit Community Cloud. To deploy your own copy, push the code to a public GitHub repo, then go to https://share.streamlit.io, click Create app, and pick `app.py` as the main file. Choose Python 3.12 in the advanced settings.
 
-```bash
-source .venv/bin/activate
-```
+If nobody opens the app for about 12 hours, it goes to sleep. The first visitor has to wait about a minute for it to wake up.
 
-Install the packages:
-
-```bash
-pip install -r requirements.txt
-```
-
-Make the sample file (only needed once):
-
-```bash
-python sample_data/make_sample.py
-```
-
-## Run the app
-
-Every time you want to use it, open Terminal, go to the folder, and run:
-
-```bash
-source .venv/bin/activate
-```
-
-```bash
-streamlit run app.py
-```
-
-Your browser opens at http://localhost:8501. Click **Try sample night**, or upload a CSV.
-
-To stop the app, click the Terminal window and press `Ctrl + C`.
-
-## Change the settings
-
-Open `config.py` and edit the numbers at the top, for example:
-
-```python
-SAMPLING_RATE_HZ = 50   # change to 100 if your sensor records 100 times per second
-WINDOW_SECONDS = 5
-```
-
-Save, then refresh the browser page.
-
-## Put it online (free, laptop can be off)
-
-This uses **Streamlit Community Cloud**. It is free and needs no credit card.
-Button names on these websites may change a little over time.
-
-### 1. Make two free accounts
-- GitHub: https://github.com/signup
-- Streamlit Community Cloud: https://share.streamlit.io, click **Continue with GitHub**
-
-### 2. Put the code on GitHub
-The easiest way is the free **GitHub Desktop** app (https://desktop.github.com).
-
-1. Open GitHub Desktop and sign in with your GitHub account.
-2. Click **File → Add Local Repository** and choose this folder.
-3. Click **Publish repository**. Name it, for example `group3-sleep-monitor`.
-   Untick **Keep this code private** (the free Streamlit plan works best with public code).
-4. Click **Publish repository** again to confirm.
-
-The `.gitignore` file makes sure the big `.venv` folder and any real recordings
-(`.csv` files other than the sample) are **not** uploaded.
-
-### 3. Turn it into a website
-1. Go to https://share.streamlit.io and click **Create app**.
-2. Choose to deploy from a GitHub repository.
-3. Fill in:
-   - Repository: `your-username/group3-sleep-monitor`
-   - Branch: `main`
-   - Main file path: `app.py`
-   - App URL: pick a name, for example `group3-sleep`
-4. Open **Advanced settings** and choose Python **3.12**.
-5. Click **Deploy**. The first start takes a few minutes.
-
-You get a link like `https://group3-sleep.streamlit.app` that anyone can open.
-
-### 4. Updating the website
-Change the code, then in GitHub Desktop write a short summary, click
-**Commit to main**, then **Push origin**. The website updates by itself in about a minute.
-
-### Good to know
-- If nobody opens the app for about 12 hours, it goes to sleep. The next visitor
-  clicks a wake-up button and waits about a minute. Open it a few minutes before a demo.
-- Online, uploads are processed on Streamlit's server (in memory, never saved by our code).
-  Only upload test data, never other people's real health data.
-
-## For teammates: swapping in the real parts
-
-- **Real model:** replace the body of `predict_stages()` in `model.py`. Keep the same
-  input (spectrograms shaped `(windows, 6, frequencies, time_steps)`) and output
-  (a list of stage names and a list of confidences 0 to 1). Then set `IS_PLACEHOLDER = False`.
-- **Khizer's preprocessing:** replace the bodies of the functions in `preprocess.py`
-  with calls to the real code, so uploads are processed exactly like the training data.
+Only upload test data. Do not upload other people's real health data.
