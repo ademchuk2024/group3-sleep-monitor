@@ -42,19 +42,22 @@ def run_pipeline(file_bytes):
     """Run every step on the CSV bytes. Everything stays in memory."""
     processed = pipeline.process_csv(file_bytes)
 
-    # Only windows without problems go to the model. The others are skipped
-    # and show up as empty stretches on the timeline.
-    usable, stages, confidences = model.predict(processed)
+    # Model, smoothing, confidence flags, summary and screening: one payload
+    # (sleepmon/report.py). Only usable windows have a stage; the others are
+    # skipped and show up as empty stretches on the timeline.
+    payload = model.analyse(processed)
+    w = payload["windows"]
+    usable = [i for i, stage in enumerate(w["stage"]) if stage is not None]
 
     # One row per usable window in a results table.
     results = pd.DataFrame({
         "window": usable,
         "start_min": processed.window_start_s[usable] / 60,
-        "stage": stages,
-        "confidence": confidences,
+        "stage": [w["stage"][i] for i in usable],
+        "confidence": [w["confidence"][i] for i in usable],
+        "low_confidence": [w["uncertain"][i] for i in usable],
     })
-    results["low_confidence"] = results["confidence"] < config.LOW_CONFIDENCE_THRESHOLD
-    return results, processed
+    return results, processed, payload
 
 
 # Page colors, copied from .streamlit/config.toml so the charts match the page.
@@ -209,7 +212,7 @@ else:
 # Step 2: run the pipeline, and show a friendly message if the file has a problem.
 try:
     with st.spinner("Processing your recording"):
-        results, processed = run_pipeline(file_bytes)
+        results, processed, payload = run_pipeline(file_bytes)
 except DataProblem as problem:
     st.error(str(problem), icon=":material/error:")
     st.stop()
@@ -262,6 +265,19 @@ for tile, stage in zip(tiles[1:], config.STAGE_DISPLAY_ORDER):
     label = stage if stage == "REM" else stage.capitalize()
     tile.metric(label, clock(minutes), f"{percent:.0f}% of night", delta_color="off", delta_arrow="off")
 
+# Screening (full design in Phase 5). Never presented as a diagnosis.
+screen = payload["screening"]
+if screen["level"] is not None:
+    st.subheader("Screening")
+    st.write(f"**{screen['level'].capitalize()}** · {screen['message']}")
+    for check in screen["checks"]:
+        mark = "outside" if check["outside"] else "within"
+        st.caption(f"{check['label']}: {check['value']:.1f} ({mark} the healthy range "
+                   f"{check['healthy_low']:.1f} to {check['healthy_high']:.1f})")
+    st.caption(screen["not_a_diagnosis"])
+elif not model.IS_PLACEHOLDER:
+    st.info(screen["message"], icon=":material/info:")
+
 # Step 4: sleep timeline.
 st.subheader("Sleep timeline")
 st.pyplot(draw_timeline(results))
@@ -271,7 +287,9 @@ flagged = results[results["low_confidence"]]
 st.subheader("Low-confidence windows")
 st.write(
     f"{len(flagged)} of {len(results)} windows ({100 * len(flagged) / len(results):.0f}%) have confidence "
-    f"below {config.LOW_CONFIDENCE_THRESHOLD:.0%}. They are marked in red under the timeline."
+    f"below {config.LOW_CONFIDENCE_THRESHOLD:.0%}"
+    + (" (how often answers like these were right on people the model never saw)" if not model.IS_PLACEHOLDER else "")
+    + ". They are marked in red under the timeline."
 )
 with st.expander("Show flagged windows"):
     table = pd.DataFrame({

@@ -30,6 +30,9 @@ def main():
     parser.add_argument("--frame-seconds", type=float, default=None, help="spectrogram frame length (default from config.py)")
     parser.add_argument("--overlap", type=float, default=None, help="frame overlap, 0 to 1 (default from config.py)")
     parser.add_argument("--datasets", nargs="+", default=["walch", "bidsleep", "newcastle"])
+    parser.add_argument("--purpose", default="stages", choices=["stages", "whole_night"],
+                        help="whole_night adds nights whose labels are not lined up (Newcastle), "
+                             "for whole-night numbers only (see catalog.list_nights)")
     args = parser.parse_args()
     if args.frame_seconds is not None:
         config.SPECTROGRAM_SEGMENT_SECONDS = args.frame_seconds
@@ -43,7 +46,7 @@ def main():
         if not os.path.isdir(catalog.FOLDERS[dataset]):
             print(f"{dataset}: not downloaded, skipping")
             continue
-        for person_id, night_id in catalog.list_nights(dataset, "stages"):
+        for person_id, night_id in catalog.list_nights(dataset, args.purpose):
             path = features.cache_path(folder, dataset, person_id, night_id)
             if os.path.exists(path):
                 skipped += 1

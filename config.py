@@ -43,7 +43,15 @@ MIN_SOURCE_RATE_HZ = 2 * SPECTROGRAM_MAX_HZ
 SPECTROGRAM_FLOOR = 1e-9
 
 # A prediction with confidence below this number gets a "low confidence" flag.
-LOW_CONFIDENCE_THRESHOLD = 0.60
+LOW_CONFIDENCE_THRESHOLD = 0.50     # PROPOSED, waiting for Anna's approval (docs/POSTPROCESSING.md)
+
+# ---- Post-processing (sleepmon/postprocess.py). PROPOSED, waiting for approval. ----
+# Chosen on the validation people by scripts/tune_postprocess.py.
+POSTPROCESS_AVERAGE_WINDOWS = 6    # average each window's likelihoods with this many neighbours
+POSTPROCESS_MIN_RUN_WINDOWS = 6    # stage runs shorter than this are handed to a neighbour
+# "The wrist really moved": above what 99% of expert-scored Deep sleep windows
+# reach on every device (training people), rounded up. Scaled magnitude units.
+MOVEMENT_THRESHOLD = 0.10
 
 # ---- The CSV format (the full description is in docs/CSV_FORMAT.md) ----
 TIME_COLUMN = "timestamp"                 # seconds
@@ -101,3 +109,11 @@ STAGE_COLORS = {
     "light": "#6F95EC",  # mid blue
     "deep": "#3A5FC8",   # deep blue
 }
+
+# ---- Screening (sleepmon/screening.py). PROPOSED, waiting for Anna's approval. ----
+# Below this much usable recording there is no screening result, only a message.
+# The shortest healthy reference nights (Walch, lab) are about 3.5 hours.
+SCREENING_MIN_USABLE_HOURS = 3
+# With at least this many healthy nights, the range is the 5th to 95th
+# percentile; with fewer, it is smallest to largest.
+SCREENING_PERCENTILE_FROM_NIGHTS = 20
