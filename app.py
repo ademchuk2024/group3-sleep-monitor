@@ -1,139 +1,91 @@
 """
 app.py - The web page. Run it with:  streamlit run app.py
 
-Flow: CSV (upload or sample) -> check -> clean -> 5 s windows -> spectrograms
-      -> model -> sleep timeline + summary.
+Flow: CSV (upload or the made-up sample) -> sleepmon.pipeline (check,
+      resample to 50 Hz, remove gravity, 5 s windows, flag bad windows,
+      spectrograms) -> model.analyse (stages, smoothing, confidence, summary,
+      screening; see sleepmon/report.py) -> this page.
+
+Privacy (requirements S.1, S.5 and the project rules):
+  - The upload is read into memory only. Nothing is written to disk.
+  - Results live in this visitor's own session (st.session_state), never in
+    a cache shared between visitors, and are gone when the tab closes.
+  - "Clear my data" wipes them at once.
+  - Each session is identified by a random code, never by anything from the file.
+  - Nothing from the upload is logged.
+
+The CSV format is described in docs/CSV_FORMAT.md, the payload in
+docs/RESULTS_JSON.md.
 """
 
-import os
+import hashlib
+import json
+import secrets
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.ticker import FuncFormatter
 import numpy as np
 import pandas as pd
 import streamlit as st
 
 import config
 import model
-import preprocess
-from sample_data.make_sample import generate_sample_df
+from sample_data.make_sample import sample_csv_bytes
+from sleepmon import dashboard, pipeline, screening
+from sleepmon.dashboard import STAGE_LABEL, clock, duration
+from sleepmon.io_csv import DataProblem
 
-SAMPLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_data", "sample_night.csv")
+SAMPLE_LABEL = "Sample night (made-up data, not a real person)"
 
-
-# ---------- Helper functions ----------
-
-def load_sample_bytes():
-    """Get the sample CSV as bytes. If the file is missing, build it in memory."""
-    if os.path.exists(SAMPLE_PATH):
-        with open(SAMPLE_PATH, "rb") as f:
-            return f.read()
-    return generate_sample_df().to_csv(index=False).encode()
-
-
-@st.cache_data(show_spinner=False)
-def run_pipeline(file_bytes):
-    """Run every step on the CSV bytes. Everything stays in memory."""
-    df = preprocess.read_and_check(file_bytes)
-    df, rows_removed = preprocess.clean(df)
-    measured_rate = preprocess.estimate_sampling_rate(df)
-    windows = preprocess.make_windows(df)
-    spectrograms, freqs, times = preprocess.make_spectrograms(windows)
-    stages, confidences = model.predict_stages(spectrograms)
-
-    # One row per window in a results table.
-    results = pd.DataFrame({
-        "window": range(len(stages)),
-        "start_min": [i * config.WINDOW_SECONDS / 60 for i in range(len(stages))],
-        "stage": stages,
-        "confidence": confidences,
-    })
-    results["low_confidence"] = results["confidence"] < config.LOW_CONFIDENCE_THRESHOLD
-    return results, spectrograms, freqs, times, rows_removed, measured_rate
-
-
-# Page colors, copied from .streamlit/config.toml so the charts match the page.
+# Page colours, copied from .streamlit/config.toml so the charts match the page.
 PAGE_BG = "#141415"
 TEXT_SECONDARY = "#a1a1a6"
 TEXT_MUTED = "#85858b"
-HAIRLINE = (0.93, 0.93, 0.93, 0.08)  # light grey at 8% opacity
-FLAG_RED = "#e5484d"
-MONO = "monospace"
-
-# Spectrogram colors: page background -> blue -> near white. Brighter = stronger.
 SPECTRO_CMAP = LinearSegmentedColormap.from_list("night", [PAGE_BG, "#3A5FC8", "#dfe8ff"])
 
 
-def clock(minutes):
-    """Turn minutes into a clock-style stamp, e.g. 12.5 -> '00:12:30'."""
-    total_seconds = int(round(minutes * 60))
-    hours, rest = divmod(total_seconds, 3600)
-    return f"{hours:02d}:{rest // 60:02d}:{rest % 60:02d}"
+# ---------- Helpers ----------
+
+@st.cache_resource(show_spinner=False)
+def sample_bytes():
+    """The made-up sample night. Shared between visitors on purpose: it is not anyone's data."""
+    return sample_csv_bytes()
 
 
-def style_axes(ax):
-    """Dark background, no box, muted mono labels."""
-    ax.set_facecolor(PAGE_BG)
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    ax.tick_params(colors=TEXT_MUTED, labelsize=8, length=0)
-    for label in ax.get_xticklabels() + ax.get_yticklabels():
-        label.set_fontfamily(MONO)
+def analyse(file_bytes, label, status):
+    """Run every step, telling the visitor what is happening (requirement U.3)."""
+    status.update(label="Checking the file and preparing the recording")
+    processed = pipeline.process_csv(file_bytes)
+    status.update(label="Working out sleep stages")
+    payload = model.analyse(processed)
+    status.update(label="Done", state="complete", expanded=False)
+    return {"label": label, "processed": processed, "payload": payload}
 
 
-def draw_timeline(results):
-    """Sleep timeline: one row per stage (deep at the bottom), one bar per window.
-    A thin line joins the stages in time order. Red ticks underneath = low confidence."""
-    fig, ax = plt.subplots(figsize=(11, 3.4), dpi=150, facecolor=PAGE_BG)
-    width = config.WINDOW_SECONDS / 60  # one window, in minutes
-    row_of = {stage: len(config.STAGE_DISPLAY_ORDER) - 1 - i for i, stage in enumerate(config.STAGE_DISPLAY_ORDER)}
-
-    # Faint vertical guide lines every 5 minutes.
-    end = results["start_min"].max() + width
-    for x in np.arange(0, end, 5):
-        ax.axvline(x, color=HAIRLINE, linewidth=0.8, zorder=0)
-
-    # Colored bars: join neighboring windows with the same stage into one bar,
-    # so there are no thin seams between them.
-    run_id = (results["stage"] != results["stage"].shift()).cumsum()
-    for _, run in results.groupby(run_id):
-        stage = run["stage"].iloc[0]
-        start, length = run["start_min"].iloc[0], len(run) * width
-        ax.broken_barh([(start, length)], (row_of[stage] - 0.32, 0.64),
-                       color=config.STAGE_COLORS[stage], zorder=2)
-
-    # Thin step line through the stages, like a sleep lab chart.
-    rows = results["stage"].map(row_of).to_numpy()
-    ax.step(results["start_min"], rows, where="post", color=(0.93, 0.93, 0.93, 0.25), linewidth=0.7, zorder=1)
-
-    # Low-confidence windows: small red ticks on their own row under the chart.
-    flagged = results.loc[results["low_confidence"], "start_min"]
-    ax.scatter(flagged + width / 2, [-0.9] * len(flagged), marker="|", color=FLAG_RED, s=40, linewidths=1, zorder=2)
-
-    ax.set_yticks([-0.9] + list(row_of.values()))
-    ax.set_yticklabels(["low conf."] + list(row_of.keys()))
-    ax.set_ylim(-1.3, len(row_of) - 0.5)
-    ax.set_xlim(0, end)
-    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, _: clock(x)[:5]))  # hh:mm
-    style_axes(ax)
-    for label in ax.get_yticklabels():
-        label.set_color(TEXT_SECONDARY)
-    ax.get_yticklabels()[0].set_color(FLAG_RED)
-    fig.tight_layout()
-    return fig
+def clear_my_data():
+    """Forget the upload and every result, and start a new session code."""
+    for key in ("result", "use_sample"):
+        st.session_state.pop(key, None)
+    st.session_state["uploader_key"] = st.session_state.get("uploader_key", 0) + 1
+    st.session_state["session_code"] = secrets.token_hex(3).upper()
 
 
-def draw_spectrogram(spectrograms, freqs, times, window_index):
-    """The 6 channel spectrograms of one window, side by side in one row."""
-    fig, axes = plt.subplots(1, 6, figsize=(11, 2.0), dpi=150, sharey=True, facecolor=PAGE_BG)
-    for i, (name, ax) in enumerate(zip(config.SENSOR_COLUMNS, axes)):
-        # log10 makes small and big values both visible; +1e-12 avoids log(0).
-        ax.pcolormesh(times, freqs, 10 * np.log10(spectrograms[window_index, i] + 1e-12),
-                      shading="auto", cmap=SPECTRO_CMAP)
-        ax.set_title(name, color=TEXT_SECONDARY, fontsize=9, fontfamily=MONO, loc="left")
+def draw_spectrogram(processed, window_index):
+    """The movement pictures of one window, one panel per sensor channel."""
+    names = list(config.ACCEL_COLUMNS)
+    pictures = [processed.spec_xyz[window_index, i] for i in range(3)]
+    if processed.spec_gyro is not None:
+        names += config.GYRO_COLUMNS
+        pictures += [processed.spec_gyro[window_index, i] for i in range(3)]
+    fig, axes = plt.subplots(1, len(names), figsize=(11, 2.0), dpi=150, sharey=True, facecolor=PAGE_BG)
+    for name, picture, ax in zip(names, pictures, axes):
+        ax.pcolormesh(processed.frame_times_s, processed.freqs_hz, picture, shading="auto", cmap=SPECTRO_CMAP)
+        ax.set_title(name, color=TEXT_SECONDARY, fontsize=9, fontfamily="monospace", loc="left")
         ax.set_xlabel("s", color=TEXT_MUTED, fontsize=8)
-        style_axes(ax)
+        ax.set_facecolor(PAGE_BG)
+        for spine in ax.spines.values():
+            spine.set_visible(False)
+        ax.tick_params(colors=TEXT_MUTED, labelsize=8, length=0)
     axes[0].set_ylabel("Hz", color=TEXT_MUTED, fontsize=8)
     fig.tight_layout()
     return fig
@@ -142,103 +94,193 @@ def draw_spectrogram(spectrograms, freqs, times, window_index):
 # ---------- The page ----------
 
 st.set_page_config(page_title="IMU Sleep Monitor", page_icon=":material/bedtime:", layout="wide")
-st.title("IMU Sleep Monitor")
-st.caption("Group 3 · Engineering Design 1 · Cloud processing and web app test case")
-st.caption(
-    ":material/lock: Your file is processed in memory only. It is never saved to disk "
-    "and is gone when you close or refresh this page. When this app runs online, "
-    "that processing happens on the hosting server, so do not upload other people's data."
-)
+if "session_code" not in st.session_state:
+    st.session_state["session_code"] = secrets.token_hex(3).upper()
 
+st.title("IMU Sleep Monitor")
+st.caption("Group 3 · Engineering Design 1 · See how a night of wrist movement compares with healthy sleepers")
+
+# The not-a-diagnosis note stays at the top of the page at all times.
 if model.IS_PLACEHOLDER:
-    st.warning(
-        "**Placeholder model.** These sleep stages are made up to show how the app works, "
-        "so they are not real results. The team's trained model will replace it.",
-        icon=":material/science:",
+    st.warning("**Placeholder model.** The sleep stages on this page are made up to show how the app works. "
+               "They are not real results.", icon=":material/science:")
+else:
+    scores = model.ABOUT["test_scores"]
+    st.info(
+        "**A screening aid, not a diagnosis.** Sleep stages are estimated from wrist movement. On people the "
+        f"model never saw, it agreed with sleep experts on {scores['accuracy']:.0%} of 5-second windows "
+        f"(macro F1 {scores['macro_f1']:.2f}, kappa {scores['kappa']:.2f}). "
+        "Only a sleep study (polysomnography) can diagnose a sleep disorder.",
+        icon=":material/info:",
     )
 
-# Step 1: get a file, either uploaded or the sample.
-left, right = st.columns([3, 1], vertical_alignment="center")
+with st.expander("How to record a night", icon=":material/help:"):
+    st.markdown(
+        "1. **Before bed:** put the sensor on your wrist, snug but comfortable, and start a recording "
+        "on the device. Start it when you go to bed, not hours before.\n"
+        "2. **During the night:** sleep as usual. Keep the sensor on the whole time.\n"
+        "3. **In the morning:** stop the recording as soon as you get up.\n"
+        "4. **Get the file:** copy the recording to your computer as a CSV file.\n"
+        "5. **Upload it here.** It takes a few seconds. You need at least "
+        f"{config.SCREENING_MIN_USABLE_HOURS} hours of recording for a screening result.\n\n"
+        f"The file needs the columns `{', '.join(config.REQUIRED_COLUMNS)}` "
+        f"(time in seconds, acceleration in g). `{', '.join(config.GYRO_COLUMNS)}` and `{config.HR_COLUMN}` "
+        "are optional. The full format is in docs/CSV_FORMAT.md in the project."
+    )
+
+# Step 1: get a file: upload, or the made-up sample.
+left, middle, right = st.columns([3, 1.2, 1], vertical_alignment="center")
 with left:
     uploaded = st.file_uploader(
-        "Recorded IMU CSV",
-        type=["csv"],
-        help="Columns needed: " + ", ".join(config.REQUIRED_COLUMNS),
+        "Your recorded night (CSV)", type=["csv"], key=f"upload_{st.session_state.get('uploader_key', 0)}",
+        help="Columns needed: " + ", ".join(config.REQUIRED_COLUMNS)
+             + ". Optional: " + ", ".join(config.GYRO_COLUMNS + [config.HR_COLUMN]) + ".",
     )
-with right:
-    if st.button("Try sample night", icon=":material/play_arrow:", width="stretch"):
+with middle:
+    if st.button("Try the sample night", icon=":material/play_arrow:", width="stretch"):
         st.session_state["use_sample"] = True
+with right:
+    st.button("Clear my data", icon=":material/delete:", width="stretch", on_click=clear_my_data,
+              help="Forget the file and every result right away.")
 
-# A new upload wins over the sample button.
+st.caption(f":material/lock: Session {st.session_state['session_code']} · Your file is read in memory only and "
+           "never saved. Results stay in this browser tab and are gone when you close it or press "
+           "Clear my data. When this app runs online, the processing happens on the hosting server, so "
+           "only upload your own recordings.")
+
+# A new upload wins over the sample.
 if uploaded is not None:
     st.session_state["use_sample"] = False
-    file_bytes, file_name = uploaded.getvalue(), uploaded.name
+    file_bytes, label = uploaded.getvalue(), "your upload"
 elif st.session_state.get("use_sample"):
-    file_bytes, file_name = load_sample_bytes(), "sample_night.csv (generated)"
+    file_bytes, label = sample_bytes(), SAMPLE_LABEL
 else:
-    st.caption(
-        f"Upload a CSV or try the sample night to begin · {config.SAMPLING_RATE_HZ} Hz, "
-        f"{config.WINDOW_SECONDS} s windows, set in config.py"
-    )
+    st.session_state.pop("result", None)
     st.stop()
 
-# Step 2: run the pipeline, and show a friendly message if the file has a problem.
-try:
-    with st.spinner("Processing your recording"):
-        results, spectrograms, freqs, times, rows_removed, measured_rate = run_pipeline(file_bytes)
-except preprocess.DataProblem as problem:
-    st.error(str(problem), icon=":material/error:")
-    st.stop()
+# Step 2: analyse, once per file per session. The fingerprint (a hash) lets us
+# notice a new file without keeping a second copy of it.
+fingerprint = hashlib.sha256(file_bytes).hexdigest()
+result = st.session_state.get("result")
+if result is None or result.get("fingerprint") != fingerprint:
+    st.session_state.pop("result", None)
+    try:
+        progress = st.empty()          # the status box disappears once the results are shown
+        with progress.status("Processing your recording", expanded=True) as status:
+            result = analyse(file_bytes, label, status)
+        progress.empty()
+    except DataProblem as problem:
+        st.error(str(problem), icon=":material/error:")
+        st.stop()
+    result["fingerprint"] = fingerprint
+    st.session_state["result"] = result
+del file_bytes
 
-total_min = len(results) * config.WINDOW_SECONDS / 60
-info = f"{file_name} · {len(results)} windows × {config.WINDOW_SECONDS} s · {clock(total_min)}"
-if rows_removed:
-    info += f" · {rows_removed} broken rows removed"
-st.caption(info)
-if abs(measured_rate - config.SAMPLING_RATE_HZ) > 0.1 * config.SAMPLING_RATE_HZ:
-    st.warning(
-        f"The timestamps suggest about {measured_rate:.0f} samples per second, but the app expects "
-        f"{config.SAMPLING_RATE_HZ}. Results may be off. Change SAMPLING_RATE_HZ in config.py if needed.",
-        icon=":material/schedule:",
-    )
+payload, processed = result["payload"], result["processed"]
+summary, screen, w = payload["summary"], payload["screening"], payload["windows"]
 
-# Step 3: summary tiles (times as hh:mm:ss stamps).
-st.subheader("Summary")
-tiles = st.columns(len(config.STAGES) + 1)
-tiles[0].metric("Total time", clock(total_min))
-for tile, stage in zip(tiles[1:], config.STAGE_DISPLAY_ORDER):
-    count = (results["stage"] == stage).sum()
-    minutes = count * config.WINDOW_SECONDS / 60
-    percent = 100 * count / len(results)
-    label = stage if stage == "REM" else stage.capitalize()
-    tile.metric(label, clock(minutes), f"{percent:.0f}% of night", delta_color="off", delta_arrow="off")
+if result["label"] == SAMPLE_LABEL:
+    st.warning("**This is the sample night: made-up data, not a real person.** Upload your own recording "
+               "to see your results.", icon=":material/science:")
 
-# Step 4: sleep timeline.
+# Step 3: alerts about the recording itself (requirement U.7).
+for kind, text in dashboard.alerts(payload):
+    (st.warning if kind == "warning" else st.info)(text, icon=":material/warning:" if kind == "warning"
+                                                    else ":material/info:")
+if payload["recording"]["has_rotation"]:
+    st.caption("Rotation (gx, gy, gz) is checked and can be viewed under Details, but sleep stages are worked "
+               "out from acceleration only, because no training data with rotation exists yet.")
+
+# Step 4: the screening result.
+st.subheader("Screening result")
+with st.container(border=True):
+    if screen["level"] is None:
+        st.write(screen["message"])
+    else:
+        st.markdown(f"**{dashboard.LEVEL_TITLE[screen['level']]}** · {screen['message']}")
+        for check in screen["checks"]:
+            icon = ":material/check_circle:" if not check["outside"] else ":material/warning:"
+            st.markdown(f"{icon} {dashboard.check_sentence(check)}")
+        st.caption(f"Healthy ranges come from {screen.get('reference_nights', 0)} nights of healthy people, "
+                   "measured the same way.")
+    st.caption(screening.NOT_A_DIAGNOSIS)
+
+# Step 5: the night in numbers (requirement U.4).
+st.subheader("The night in numbers")
+top, bottom = st.columns(3), st.columns(3)
+top[0].metric("Total sleep", duration(summary["total_sleep_minutes"]))
+top[1].metric("Sleep efficiency", f"{summary['sleep_efficiency_percent']:.0f}%",
+              help="Share of the usable recording spent asleep.")
+top[2].metric("Time to fall asleep", duration(summary["sleep_latency_minutes"])
+              if summary["sleep_latency_minutes"] is not None else "No sleep found")
+bottom[0].metric("Awake after falling asleep", duration(summary["waso_minutes"]))
+bottom[1].metric("Awakenings", summary["awakenings"], help="Awake for 1 minute or longer after falling asleep.")
+bottom[2].metric("Restless minutes", summary["restless_minutes"],
+                 help="Minutes after falling asleep in which the wrist really moved.")
+
+# Step 6: sleep timeline (requirement U.5).
 st.subheader("Sleep timeline")
-st.pyplot(draw_timeline(results))
+st.pyplot(dashboard.draw_timeline(payload))
+stage_cols = st.columns(4)
+for col, stage in zip(stage_cols, config.STAGE_DISPLAY_ORDER):
+    minutes = summary["stage_minutes"][stage]
+    share = (f"{summary['stage_percent_of_sleep'][stage]:.0f}% of sleep" if stage != "awake"
+             else f"{100 * minutes / max(summary['usable_minutes'], 1):.0f}% of recording")
+    col.metric(STAGE_LABEL[stage], duration(minutes), share, delta_color="off", delta_arrow="off")
+st.caption(f"Striped stretches are uncertain ({summary['uncertain_share']:.0%} of this night): answers like "
+           "these were wrong more often than right on people the model never saw. Deep and REM sleep are the "
+           "hardest to tell from wrist movement, so treat their times as rough.")
 
-# Step 5: low-confidence flags.
-flagged = results[results["low_confidence"]]
-st.subheader("Low-confidence windows")
-st.write(
-    f"{len(flagged)} of {len(results)} windows ({100 * len(flagged) / len(results):.0f}%) have confidence "
-    f"below {config.LOW_CONFIDENCE_THRESHOLD:.0%}. They are marked in red under the timeline."
-)
-with st.expander("Show flagged windows"):
+# Step 7: flagged periods, in plain words (requirement U.6).
+st.subheader("Flagged periods")
+periods = dashboard.flagged_periods(payload)
+if not periods:
+    st.write("Nothing to point out in this night.")
+else:
+    kinds = {"awake": "Awake", "movement": "Restless", "uncertain": "Uncertain", "no data": "No data"}
+    present = [k for k in kinds if any(p["kind"] == k for p in periods)]
+    shown = st.pills("Show", [kinds[k] for k in present], default=[kinds[k] for k in present],
+                     selection_mode="multi", label_visibility="collapsed")
     table = pd.DataFrame({
-        "window": flagged["window"],
-        "start": flagged["start_min"].map(clock),
-        "stage": flagged["stage"],
-        "confidence": flagged["confidence"].map(lambda c: f"{c:.0%}"),
+        "From": [clock(p["start_min"]) for p in periods],
+        "To": [clock(p["end_min"]) for p in periods],
+        "What": [kinds[p["kind"]] for p in periods],
+        "Description": [p["text"] for p in periods],
     })
-    st.dataframe(table, hide_index=True, width="stretch")
+    table = table[table["What"].isin(shown or [])]
+    st.dataframe(table, hide_index=True, width="stretch", column_config={
+        "From": st.column_config.TextColumn(width="small"), "To": st.column_config.TextColumn(width="small"),
+        "What": st.column_config.TextColumn(width="small"),
+        "Description": st.column_config.TextColumn(width="large")})
+    st.caption("Times are hours:minutes since the recording started.")
 
-# Step 6: example spectrogram.
-st.subheader("Example spectrogram")
-window_index = st.slider("Window", 0, len(results) - 1, 0)
-row = results.iloc[window_index]
-st.caption(
-    f"Window {window_index} · starts {clock(row['start_min'])} · predicted {row['stage']}, "
-    f"confidence {row['confidence']:.0%} · one panel per sensor channel, brighter means stronger movement"
-)
-st.pyplot(draw_spectrogram(spectrograms, freqs, times, window_index))
+# Step 8: downloads.
+st.subheader("Download")
+d1, d2, _ = st.columns([1, 1, 2])
+code = st.session_state["session_code"]
+d1.download_button("Report (PDF)", data=dashboard.build_pdf(payload, code, result["label"]),
+                   file_name=f"sleep-report-{code}.pdf", mime="application/pdf", icon=":material/description:",
+                   width="stretch")
+d2.download_button("All results (JSON)", data=json.dumps(payload, indent=1), file_name=f"sleep-results-{code}.json",
+                   mime="application/json", icon=":material/data_object:", width="stretch")
+st.caption("Both files are made in memory for you to keep. Nothing is kept on the server.")
+
+# Step 9: details for the curious.
+with st.expander("Details: the recording and the movement pictures"):
+    rec = payload["recording"]
+    st.write(
+        f"{duration(rec['minutes'])} recorded at about {rec['readings_per_second']:.0f} readings per second, "
+        f"{'6' if rec['has_rotation'] else '3'} motion channels"
+        f"{', with heart rate' if rec['has_heart_rate'] else ''}. "
+        + (f"{duration(rec['minutes'] - rec['usable_minutes'])} could not be used."
+           if rec["minutes"] - rec["usable_minutes"] >= 0.5 else "All of it could be used.")
+    )
+    usable = [i for i, s in enumerate(w["stage"]) if s is not None]
+    if usable:
+        position = st.slider("Window", 0, len(usable) - 1, 0, help="Pick a 5-second window to look at.")
+        i = usable[position]
+        conf = w["confidence"][i]
+        st.caption(f"Window at {clock((w['start_seconds'][i] - w['start_seconds'][0]) / 60)} · "
+                   f"{STAGE_LABEL[w['stage'][i]]}{' (uncertain)' if w['uncertain'][i] else ''}, "
+                   f"confidence {conf:.0%} · brighter means stronger movement at that frequency")
+        st.pyplot(draw_spectrogram(processed, i))

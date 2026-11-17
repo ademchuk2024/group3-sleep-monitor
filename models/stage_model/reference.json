@@ -1,0 +1,18 @@
+{
+ "nights": 8,
+ "ranges": {
+  "sleep_efficiency_percent": {
+   "low": 76.52643335815338,
+   "high": 93.02204478389167
+  },
+  "awakenings_per_hour": {
+   "low": 0.5664830841856806,
+   "high": 2.6871569703622393
+  },
+  "restless_minutes_per_hour": {
+   "low": 2.6519337016574585,
+   "high": 10.333252250060813
+  }
+ },
+ "source": "Walch and BIDSleep people in validation and test, time in bed only"
+}

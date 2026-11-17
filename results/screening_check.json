@@ -1,0 +1,572 @@
+{
+ "reference": {
+  "nights": 8,
+  "ranges": {
+   "sleep_efficiency_percent": {
+    "low": 76.52643335815338,
+    "high": 93.02204478389167
+   },
+   "awakenings_per_hour": {
+    "low": 0.5664830841856806,
+    "high": 2.6871569703622393
+   },
+   "restless_minutes_per_hour": {
+    "low": 2.6519337016574585,
+    "high": 10.333252250060813
+   }
+  },
+  "source": "Walch and BIDSleep people in validation and test, time in bed only"
+ },
+ "counts": {
+  "healthy": {
+   "nights": 8,
+   "low": 6,
+   "medium": 1,
+   "high": 1,
+   "none": 0
+  },
+  "newcastle_disorder": {
+   "nights": 14,
+   "low": 0,
+   "medium": 3,
+   "high": 11,
+   "none": 0
+  },
+  "newcastle_no_disorder": {
+   "nights": 5,
+   "low": 1,
+   "medium": 0,
+   "high": 4,
+   "none": 0
+  }
+ },
+ "nights": [
+  {
+   "group": "healthy",
+   "person": "walch:2598705",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 88.02083333333331,
+    "awakenings_per_hour": 1.8745562130177515,
+    "restless_minutes_per_hour": 6.305325443786982,
+    "usable_minutes": 400.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 98.22916666666666,
+    "awakenings_per_hour": 0.0,
+    "restless_minutes_per_hour": 6.87168610816543
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:3509524",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 86.81055155875299,
+    "awakenings_per_hour": 0.994475138121547,
+    "restless_minutes_per_hour": 2.6519337016574585,
+    "usable_minutes": 208.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 87.29016786570743,
+    "awakenings_per_hour": 1.6483516483516485,
+    "restless_minutes_per_hour": 2.6373626373626373
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:46343",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 79.34978928356412,
+    "awakenings_per_hour": 1.9119878603945373,
+    "restless_minutes_per_hour": 4.09711684370258,
+    "usable_minutes": 276.8333333333333
+   },
+   "expert": {
+    "sleep_efficiency_percent": 84.70800722456352,
+    "awakenings_per_hour": 1.279317697228145,
+    "restless_minutes_per_hour": 4.605543710021322
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:5132496",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 91.40596907587198,
+    "awakenings_per_hour": 0.5664830841856806,
+    "restless_minutes_per_hour": 9.34697088906373,
+    "usable_minutes": 231.75
+   },
+   "expert": {
+    "sleep_efficiency_percent": 92.95217547644731,
+    "awakenings_per_hour": 0.5570599613152805,
+    "restless_minutes_per_hour": 9.470019342359768
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:6220552",
+   "level": "medium",
+   "outside": [
+    "awakenings_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 79.52164804469272,
+    "awakenings_per_hour": 2.6871569703622393,
+    "restless_minutes_per_hour": 10.116355653128432,
+    "usable_minutes": 477.3333333333333
+   },
+   "expert": {
+    "sleep_efficiency_percent": 94.44832402234636,
+    "awakenings_per_hour": 0.6654343807763402,
+    "restless_minutes_per_hour": 8.650646950092423
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:844359",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 76.52643335815338,
+    "awakenings_per_hour": 1.9265385550960836,
+    "restless_minutes_per_hour": 10.333252250060813,
+    "usable_minutes": 447.66666666666663
+   },
+   "expert": {
+    "sleep_efficiency_percent": 89.79895755770663,
+    "awakenings_per_hour": 1.1940298507462686,
+    "restless_minutes_per_hour": 8.059701492537313
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:8692923",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 85.7880676758682,
+    "awakenings_per_hour": 0.747353124351256,
+    "restless_minutes_per_hour": 5.082001245588541,
+    "usable_minutes": 467.91666666666663
+   },
+   "expert": {
+    "sleep_efficiency_percent": 88.24577025823687,
+    "awakenings_per_hour": 0.4359233097880929,
+    "restless_minutes_per_hour": 4.940464177598386
+   }
+  },
+  {
+   "group": "healthy",
+   "person": "walch:9106476",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 93.02204478389167,
+    "awakenings_per_hour": 1.2091808173166636,
+    "restless_minutes_per_hour": 7.658145176338869,
+    "usable_minutes": 480.0833333333333
+   },
+   "expert": {
+    "sleep_efficiency_percent": 90.93907307759069,
+    "awakenings_per_hour": 1.6491696888719223,
+    "restless_minutes_per_hour": 7.8335560221416305
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:01",
+   "level": "medium",
+   "outside": [
+    "sleep_efficiency_percent"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 73.58231498009062,
+    "awakenings_per_hour": 2.552715058779623,
+    "restless_minutes_per_hour": 5.777197238290726,
+    "usable_minutes": 606.9166666666666
+   },
+   "expert": {
+    "sleep_efficiency_percent": 75.28491006453385,
+    "awakenings_per_hour": 1.1818347619916105,
+    "restless_minutes_per_hour": 4.858654021521065
+   }
+  },
+  {
+   "group": "newcastle_no_disorder",
+   "person": "newcastle:02",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 61.14173928507914,
+    "awakenings_per_hour": 2.7225130890052354,
+    "restless_minutes_per_hour": 11.308900523560208,
+    "usable_minutes": 468.5833333333333
+   },
+   "expert": {
+    "sleep_efficiency_percent": 71.17197225680242,
+    "awakenings_per_hour": 1.4392803598200898,
+    "restless_minutes_per_hour": 11.87406296851574
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:14",
+   "level": "medium",
+   "outside": [
+    "sleep_efficiency_percent"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 0.47101449275362317,
+    "awakenings_per_hour": 0.0,
+    "restless_minutes_per_hour": 0.0,
+    "usable_minutes": 460.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 24.02173913043478,
+    "awakenings_per_hour": 13.574660633484164,
+    "restless_minutes_per_hour": 177.55656108597287
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:21",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 43.72322471764247,
+    "awakenings_per_hour": 1.7102137767220904,
+    "restless_minutes_per_hour": 13.467933491686463,
+    "usable_minutes": 641.9166666666666
+   },
+   "expert": {
+    "sleep_efficiency_percent": 51.09697520446579,
+    "awakenings_per_hour": 2.926829268292683,
+    "restless_minutes_per_hour": 38.41463414634146
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:23",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 50.791433891992554,
+    "awakenings_per_hour": 3.519706691109074,
+    "restless_minutes_per_hour": 27.277726856095324,
+    "usable_minutes": 537.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 58.28677839851024,
+    "awakenings_per_hour": 2.8753993610223643,
+    "restless_minutes_per_hour": 10.926517571884984
+   }
+  },
+  {
+   "group": "newcastle_no_disorder",
+   "person": "newcastle:27",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 65.09229098805645,
+    "awakenings_per_hour": 3.2427022518765636,
+    "restless_minutes_per_hour": 13.211009174311926,
+    "usable_minutes": 767.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 66.71009771986971,
+    "awakenings_per_hour": 2.34375,
+    "restless_minutes_per_hour": 13.125
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:28",
+   "level": "medium",
+   "outside": [
+    "sleep_efficiency_percent"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 2.751865671641791,
+    "awakenings_per_hour": 0.0,
+    "restless_minutes_per_hour": 4.067796610169491,
+    "usable_minutes": 536.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 14.925373134328359,
+    "awakenings_per_hour": 4.5,
+    "restless_minutes_per_hour": 126.75
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:31",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 67.72930648769575,
+    "awakenings_per_hour": 3.1213872832369947,
+    "restless_minutes_per_hour": 9.215524360033031,
+    "usable_minutes": 596.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 80.53691275167785,
+    "awakenings_per_hour": 2.25,
+    "restless_minutes_per_hour": 6.875
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:32",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 25.73576455534229,
+    "awakenings_per_hour": 4.027346177750156,
+    "restless_minutes_per_hour": 51.0130515848353,
+    "usable_minutes": 521.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 60.74856046065259,
+    "awakenings_per_hour": 3.0331753554502368,
+    "restless_minutes_per_hour": 39.431279620853076
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:34",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 52.147239263803684,
+    "awakenings_per_hour": 5.243697478991597,
+    "restless_minutes_per_hour": 27.226890756302524,
+    "usable_minutes": 570.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 83.08501314636284,
+    "awakenings_per_hour": 2.531645569620253,
+    "restless_minutes_per_hour": 18.987341772151897
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:35",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 20.301783264746227,
+    "awakenings_per_hour": 3.040540540540541,
+    "restless_minutes_per_hour": 98.51351351351352,
+    "usable_minutes": 486.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 43.62139917695473,
+    "awakenings_per_hour": 3.679245283018868,
+    "restless_minutes_per_hour": 54.05660377358491
+   }
+  },
+  {
+   "group": "newcastle_no_disorder",
+   "person": "newcastle:38",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 32.53904146472805,
+    "awakenings_per_hour": 8.340918494000828,
+    "restless_minutes_per_hour": 53.918080264791065,
+    "usable_minutes": 619.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 78.67528271405493,
+    "awakenings_per_hour": 1.6016427104722792,
+    "restless_minutes_per_hour": 31.41683778234086
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:39",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 64.87752161383285,
+    "awakenings_per_hour": 3.59800111049417,
+    "restless_minutes_per_hour": 16.524153248195447,
+    "usable_minutes": 694.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 82.70893371757926,
+    "awakenings_per_hour": 1.5679442508710801,
+    "restless_minutes_per_hour": 13.797909407665506
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:45",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 12.286324786324787,
+    "awakenings_per_hour": 3.1304347826086953,
+    "restless_minutes_per_hour": 33.391304347826086,
+    "usable_minutes": 468.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 79.8076923076923,
+    "awakenings_per_hour": 4.658634538152611,
+    "restless_minutes_per_hour": 40.6425702811245
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:49",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 49.41703102227774,
+    "awakenings_per_hour": 2.578470613018749,
+    "restless_minutes_per_hour": 20.17274067832315,
+    "usable_minutes": 800.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 31.043098063710183,
+    "awakenings_per_hour": 3.380281690140845,
+    "restless_minutes_per_hour": 20.523138832997986
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:51",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 29.633867276887873,
+    "awakenings_per_hour": 2.77992277992278,
+    "restless_minutes_per_hour": 93.28185328185329,
+    "usable_minutes": 655.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 66.51411136536994,
+    "awakenings_per_hour": 5.779816513761468,
+    "restless_minutes_per_hour": 43.34862385321101
+   }
+  },
+  {
+   "group": "newcastle_disorder",
+   "person": "newcastle:56",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 30.778816199376944,
+    "awakenings_per_hour": 5.465587044534413,
+    "restless_minutes_per_hour": 47.73279352226721,
+    "usable_minutes": 535.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 91.6822429906542,
+    "awakenings_per_hour": 0.856269113149847,
+    "restless_minutes_per_hour": 29.84709480122324
+   }
+  },
+  {
+   "group": "newcastle_no_disorder",
+   "person": "newcastle:59",
+   "level": "high",
+   "outside": [
+    "sleep_efficiency_percent",
+    "awakenings_per_hour",
+    "restless_minutes_per_hour"
+   ],
+   "model": {
+    "sleep_efficiency_percent": 69.13827655310621,
+    "awakenings_per_hour": 5.043478260869565,
+    "restless_minutes_per_hour": 13.217391304347826,
+    "usable_minutes": 499.0
+   },
+   "expert": {
+    "sleep_efficiency_percent": 94.48897795591182,
+    "awakenings_per_hour": 0.7635206786850477,
+    "restless_minutes_per_hour": 10.053022269353129
+   }
+  },
+  {
+   "group": "newcastle_no_disorder",
+   "person": "newcastle:60",
+   "level": "low",
+   "outside": [],
+   "model": {
+    "sleep_efficiency_percent": 78.54588796185935,
+    "awakenings_per_hour": 2.3672230652503794,
+    "restless_minutes_per_hour": 5.28072837632777,
+    "usable_minutes": 419.5
+   },
+   "expert": {
+    "sleep_efficiency_percent": 90.58402860548271,
+    "awakenings_per_hour": 2.6842105263157894,
+    "restless_minutes_per_hour": 5.684210526315789
+   }
+  }
+ ]
+}

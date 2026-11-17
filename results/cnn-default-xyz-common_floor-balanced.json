@@ -1,0 +1,323 @@
+{
+ "label": "cnn-default-xyz-common_floor-balanced",
+ "kind": "cnn",
+ "scored_on": "validation",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "xyz",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": false,
+  "datasets": null,
+  "score_on": "validation",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": false,
+  "balanced": true,
+  "use_heart_rate": false
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 105.8,
+ "training": {
+  "history": [
+   {
+    "epoch": 1,
+    "loss": 1.284516763132672,
+    "validation_macro_f1": 0.27093380554682084
+   },
+   {
+    "epoch": 2,
+    "loss": 1.267947913879572,
+    "validation_macro_f1": 0.26959395312030915
+   },
+   {
+    "epoch": 3,
+    "loss": 1.2541532383408658,
+    "validation_macro_f1": 0.36901406014430155
+   },
+   {
+    "epoch": 4,
+    "loss": 1.2447966237400854,
+    "validation_macro_f1": 0.3616587196175327
+   },
+   {
+    "epoch": 5,
+    "loss": 1.2365235217781954,
+    "validation_macro_f1": 0.2935743094057998
+   },
+   {
+    "epoch": 6,
+    "loss": 1.2287468111792277,
+    "validation_macro_f1": 0.3618068789593488
+   },
+   {
+    "epoch": 7,
+    "loss": 1.2216751359229865,
+    "validation_macro_f1": 0.32084830436216194
+   },
+   {
+    "epoch": 8,
+    "loss": 1.2137084683706594,
+    "validation_macro_f1": 0.29901862196697526
+   },
+   {
+    "epoch": 9,
+    "loss": 1.2039898029593534,
+    "validation_macro_f1": 0.38192019037404296
+   },
+   {
+    "epoch": 10,
+    "loss": 1.1959611188533694,
+    "validation_macro_f1": 0.36277987704890663
+   },
+   {
+    "epoch": 11,
+    "loss": 1.188746248844058,
+    "validation_macro_f1": 0.32616486567791797
+   },
+   {
+    "epoch": 12,
+    "loss": 1.1792765855789185,
+    "validation_macro_f1": 0.3315528848814288
+   },
+   {
+    "epoch": 13,
+    "loss": 1.1697405959284584,
+    "validation_macro_f1": 0.3554057642281807
+   },
+   {
+    "epoch": 14,
+    "loss": 1.1593904894451763,
+    "validation_macro_f1": 0.3041732975823283
+   },
+   {
+    "epoch": 15,
+    "loss": 1.1518153933591622,
+    "validation_macro_f1": 0.35644338967559935
+   }
+  ],
+  "best_validation_macro_f1": 0.38192019037404296
+ },
+ "result": {
+  "overall": {
+   "windows": 34157,
+   "accuracy": 0.4580905817255614,
+   "macro_f1": 0.38192019037404296,
+   "kappa": 0.2516890805081743,
+   "per_stage": {
+    "awake": {
+     "precision": 0.6209895632006185,
+     "recall": 0.7964141122035859,
+     "f1": 0.6978461538461539,
+     "windows": 12103
+    },
+    "light": {
+     "precision": 0.596279537456008,
+     "recall": 0.24771983568892292,
+     "f1": 0.35002459419576987,
+     "windows": 14363
+    },
+    "deep": {
+     "precision": 0.18365553602811951,
+     "recall": 0.24780649751007824,
+     "f1": 0.21096194609871805,
+     "windows": 4217
+    },
+    "REM": {
+     "precision": 0.20134709085697908,
+     "recall": 0.4044329303396661,
+     "f1": 0.26884806735553,
+     "windows": 3474
+    }
+   },
+   "confusion_matrix": [
+    [
+     9639,
+     467,
+     1341,
+     656
+    ],
+    [
+     4180,
+     3558,
+     2563,
+     4062
+    ],
+    [
+     1104,
+     1213,
+     1045,
+     855
+    ],
+    [
+     599,
+     729,
+     741,
+     1405
+    ]
+   ]
+  },
+  "by_dataset": {
+   "newcastle": {
+    "windows": 17887,
+    "accuracy": 0.5337395874098507,
+    "macro_f1": 0.23183135460144555,
+    "kappa": 0.09106523715478501,
+    "per_stage": {
+     "awake": {
+      "precision": 0.6282271944922547,
+      "recall": 0.8790097293131683,
+      "f1": 0.7327551593993415,
+      "windows": 10381
+     },
+     "light": {
+      "precision": 0.5277777777777778,
+      "recall": 0.0036149162861491627,
+      "f1": 0.007180650037792894,
+      "windows": 5256
+     },
+     "deep": {
+      "precision": 0.1258763543658381,
+      "recall": 0.2633333333333333,
+      "f1": 0.17033203967227253,
+      "windows": 1500
+     },
+     "REM": {
+      "precision": 0.0425531914893617,
+      "recall": 0.010666666666666666,
+      "f1": 0.017057569296375266,
+      "windows": 750
+     }
+    },
+    "confusion_matrix": [
+     [
+      9125,
+      12,
+      1188,
+      56
+     ],
+     [
+      3788,
+      19,
+      1364,
+      85
+     ],
+     [
+      1061,
+      5,
+      395,
+      39
+     ],
+     [
+      551,
+      0,
+      191,
+      8
+     ]
+    ]
+   },
+   "walch": {
+    "windows": 16270,
+    "accuracy": 0.3749231714812538,
+    "macro_f1": 0.3472882712445048,
+    "kappa": 0.09853739284310732,
+    "per_stage": {
+     "awake": {
+      "precision": 0.5155466399197592,
+      "recall": 0.29849012775842043,
+      "f1": 0.378080176535491,
+      "windows": 1722
+     },
+     "light": {
+      "precision": 0.5966953296240094,
+      "recall": 0.3886021741517514,
+      "f1": 0.47067429179412157,
+      "windows": 9107
+     },
+     "deep": {
+      "precision": 0.2547021943573668,
+      "recall": 0.23923444976076555,
+      "f1": 0.24672613399126972,
+      "windows": 2717
+     },
+     "REM": {
+      "precision": 0.20574374079528718,
+      "recall": 0.512848751835536,
+      "f1": 0.29367248265713686,
+      "windows": 2724
+     }
+    },
+    "confusion_matrix": [
+     [
+      514,
+      455,
+      153,
+      600
+     ],
+     [
+      392,
+      3539,
+      1199,
+      3977
+     ],
+     [
+      43,
+      1208,
+      650,
+      816
+     ],
+     [
+      48,
+      729,
+      550,
+      1397
+     ]
+    ]
+   }
+  }
+ }
+}

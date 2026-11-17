@@ -10,6 +10,17 @@ __pycache__/
 # Mac Finder files
 .DS_Store
 
-# Never upload real recordings by accident (the sample file is allowed)
+# Never upload real recordings by accident. No CSV is ever tracked: the
+# sample night is generated in memory (sample_data/make_sample.py).
 *.csv
-!sample_data/sample_night.csv
+
+# Downloaded research datasets (Walch, BIDSleep, Newcastle) and anything built
+# from them. They are large, and their licenses and our privacy rules mean
+# they must never be uploaded to GitHub. tests/test_repo_hygiene.py checks this.
+data/
+
+# Files pytest makes when it runs
+.pytest_cache/
+
+# Local tool settings for the editor and Claude (not part of the project)
+.claude/

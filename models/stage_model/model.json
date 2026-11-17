@@ -1,0 +1,57 @@
+{
+ "label": "sequence-default-magnitude-common_floor-balanced-test",
+ "kind": "sequence",
+ "use_heart_rate": false,
+ "version": "magnitude",
+ "norm": "common_floor",
+ "tag": "default",
+ "scored_on": "test",
+ "test_scores": {
+  "accuracy": 0.46790577727458565,
+  "macro_f1": 0.42857378195222345,
+  "kappa": 0.23416767936619987
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ }
+}

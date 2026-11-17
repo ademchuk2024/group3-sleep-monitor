@@ -1,0 +1,323 @@
+{
+ "label": "dnn-default-magnitude-common_floor-balanced-test",
+ "kind": "dnn",
+ "scored_on": "test",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "magnitude",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": false,
+  "datasets": null,
+  "score_on": "test",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": true,
+  "balanced": true,
+  "use_heart_rate": false
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 17.1,
+ "training": {
+  "history": [
+   {
+    "epoch": 1,
+    "loss": 1.279378127497296,
+    "validation_macro_f1": 0.2984393341317957
+   },
+   {
+    "epoch": 2,
+    "loss": 1.2562138374461684,
+    "validation_macro_f1": 0.3102161430323851
+   },
+   {
+    "epoch": 3,
+    "loss": 1.2487239660218705,
+    "validation_macro_f1": 0.3653067779059967
+   },
+   {
+    "epoch": 4,
+    "loss": 1.2448939883431722,
+    "validation_macro_f1": 0.35621337115525453
+   },
+   {
+    "epoch": 5,
+    "loss": 1.2419017492338669,
+    "validation_macro_f1": 0.36016135761070256
+   },
+   {
+    "epoch": 6,
+    "loss": 1.2396013076915298,
+    "validation_macro_f1": 0.35689012131716247
+   },
+   {
+    "epoch": 7,
+    "loss": 1.2383344994034877,
+    "validation_macro_f1": 0.3549985658839986
+   },
+   {
+    "epoch": 8,
+    "loss": 1.2363558741502985,
+    "validation_macro_f1": 0.3600012513286228
+   },
+   {
+    "epoch": 9,
+    "loss": 1.2342411451561506,
+    "validation_macro_f1": 0.3776595382456789
+   },
+   {
+    "epoch": 10,
+    "loss": 1.2339819647545038,
+    "validation_macro_f1": 0.3767155305573995
+   },
+   {
+    "epoch": 11,
+    "loss": 1.2343286408934482,
+    "validation_macro_f1": 0.37212315698406995
+   },
+   {
+    "epoch": 12,
+    "loss": 1.2325973067172737,
+    "validation_macro_f1": 0.35346864069819733
+   },
+   {
+    "epoch": 13,
+    "loss": 1.231216423456059,
+    "validation_macro_f1": 0.37005311939374586
+   },
+   {
+    "epoch": 14,
+    "loss": 1.2307854131210683,
+    "validation_macro_f1": 0.3584654161226518
+   },
+   {
+    "epoch": 15,
+    "loss": 1.229369059274363,
+    "validation_macro_f1": 0.3709169303490384
+   }
+  ],
+  "best_validation_macro_f1": 0.3776595382456789
+ },
+ "result": {
+  "overall": {
+   "windows": 31797,
+   "accuracy": 0.32175991445733876,
+   "macro_f1": 0.3261891903668233,
+   "kappa": 0.09598094063481975,
+   "per_stage": {
+    "awake": {
+     "precision": 0.39347181008902077,
+     "recall": 0.4019399818126705,
+     "f1": 0.3976608187134503,
+     "windows": 3299
+    },
+    "light": {
+     "precision": 0.5896670150813798,
+     "recall": 0.2288877296702023,
+     "f1": 0.32977035490605433,
+     "windows": 17253
+    },
+    "deep": {
+     "precision": 0.23767798466593648,
+     "recall": 0.5679699002126616,
+     "f1": 0.33511896144008496,
+     "windows": 6113
+    },
+    "REM": {
+     "precision": 0.2083684358326313,
+     "recall": 0.289166017147311,
+     "f1": 0.24220662640770363,
+     "windows": 5132
+    }
+   },
+   "confusion_matrix": [
+    [
+     1326,
+     360,
+     949,
+     664
+    ],
+    [
+     1406,
+     3949,
+     7981,
+     3917
+    ],
+    [
+     202,
+     1382,
+     3472,
+     1057
+    ],
+    [
+     436,
+     1006,
+     2206,
+     1484
+    ]
+   ]
+  },
+  "by_dataset": {
+   "newcastle": {
+    "windows": 12186,
+    "accuracy": 0.2591498440833744,
+    "macro_f1": 0.23599631460262865,
+    "kappa": 0.0873946372701038,
+    "per_stage": {
+     "awake": {
+      "precision": 0.50997150997151,
+      "recall": 0.4796355841371919,
+      "f1": 0.4943385805026236,
+      "windows": 1866
+     },
+     "light": {
+      "precision": 0.49214659685863876,
+      "recall": 0.02995538559592097,
+      "f1": 0.056473415440072096,
+      "windows": 6276
+     },
+     "deep": {
+      "precision": 0.20519348268839105,
+      "recall": 0.9052111410601976,
+      "f1": 0.3345508882616636,
+      "windows": 2226
+     },
+     "REM": {
+      "precision": 0.26200873362445415,
+      "recall": 0.033003300330033,
+      "f1": 0.05862237420615534,
+      "windows": 1818
+     }
+    },
+    "confusion_matrix": [
+     [
+      895,
+      36,
+      904,
+      31
+     ],
+     [
+      580,
+      188,
+      5398,
+      110
+     ],
+     [
+      112,
+      71,
+      2015,
+      28
+     ],
+     [
+      168,
+      87,
+      1503,
+      60
+     ]
+    ]
+   },
+   "walch": {
+    "windows": 19611,
+    "accuracy": 0.3606649329457957,
+    "macro_f1": 0.33318480560120295,
+    "kappa": 0.09436434665435797,
+    "per_stage": {
+     "awake": {
+      "precision": 0.26687306501547986,
+      "recall": 0.3007676203768318,
+      "f1": 0.2828083989501312,
+      "windows": 1433
+     },
+     "light": {
+      "precision": 0.5955661124307206,
+      "recall": 0.3426254896601986,
+      "f1": 0.43499884339579,
+      "windows": 10977
+     },
+     "deep": {
+      "precision": 0.30430242272347535,
+      "recall": 0.37483920761512735,
+      "f1": 0.3359077809798271,
+      "windows": 3887
+     },
+     "REM": {
+      "precision": 0.2065863919918758,
+      "recall": 0.4296922148461074,
+      "f1": 0.2790241990790634,
+      "windows": 3314
+     }
+    },
+    "confusion_matrix": [
+     [
+      431,
+      324,
+      45,
+      633
+     ],
+     [
+      826,
+      3761,
+      2583,
+      3807
+     ],
+     [
+      90,
+      1311,
+      1457,
+      1029
+     ],
+     [
+      268,
+      919,
+      703,
+      1424
+     ]
+    ]
+   }
+  }
+ }
+}

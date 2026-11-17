@@ -1,0 +1,4 @@
+# Extra packages needed only for development (running the tests).
+# The online app does NOT install these. Install with:
+#   pip install -r requirements.txt -r requirements-dev.txt
+pytest==9.0.2
