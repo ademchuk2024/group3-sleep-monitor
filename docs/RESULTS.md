@@ -208,6 +208,21 @@ test night. The largest difference was 0.000002.
 2. Try a Transformer in place of the LSTM in the Colab run? It would cost
    another hour of training. The app limits leave room for it.
 
+## What happens after the model
+
+The model's raw answers are not shown as they are. These steps are in
+separate pages, with their own numbers:
+
+- **Smoothing and confidence** ([POSTPROCESSING.md](POSTPROCESSING.md)): stage
+  changes per hour fell from 9.0 to 5.7 (sleep experts: 5.2) with macro F1
+  unchanged. Confidence was calibrated on validation people; on test people,
+  answers below 0.50 were right 28% of the time, the rest 71%.
+- **Screening** ([POSTPROCESSING.md](POSTPROCESSING.md)): 8 healthy nights
+  give the healthy range. Leaving each one out in turn, 6 of 8 came out
+  *Typical*; 11 of 14 Newcastle patients with a sleep disorder came out
+  *Unusual*, but so did 4 of 5 without one.
+- **Which requirement each part meets** ([REQUIREMENTS.md](REQUIREMENTS.md)).
+
 ## Files
 
 | File | What it is |

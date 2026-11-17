@@ -9,7 +9,9 @@ to D1 to D6.
 | 2 Signal processing | Done and approved. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
 | 3 Models | Done on the laptop data and approved. See `docs/RESULTS.md`. The full-data run is ready in `notebooks/train_models.ipynb` |
 | 4 Post-processing and screening | Done and approved (17 Nov 2026). See `docs/POSTPROCESSING.md` and `docs/RESULTS_JSON.md` |
-| 5 Dashboard | Done, waiting for Anna's go-ahead for the wrap-up. `app.py`, `sleepmon/dashboard.py` |
+| 5 Dashboard | Done and approved. `app.py`, `sleepmon/dashboard.py` |
+| Wrap-up | Done, waiting for Anna's review. `README.md`, `docs/REQUIREMENTS.md`, `docs/RESULTS.md` |
+| Still open | Colab run on all of BIDSleep (needs the code pushed to GitHub); team answers on the heart-rate model and a Transformer (`docs/RESULTS.md`); a short usability session with real users (U.1) |
 
 Run the tests from the project folder with `python -m pytest`.
 
@@ -295,6 +297,12 @@ processing status.
 README, `docs/RESULTS.md` (real numbers for every model), and
 `docs/REQUIREMENTS.md` mapping F.1 to F.13, U.1 to U.7, S.1 to S.5 to the
 code and the test for each.
+
+Outcome: done 17 Nov 2026. `docs/REQUIREMENTS.md` gives an honest status for
+each requirement: 20 met, S.1 met differently (nothing is stored, so there
+is nothing to protect), U.1 and U.3 partly met (U.1 needs real users to
+judge; U.3's recording and transfer status are the wearable's), S.2 and S.4
+belong to the wearable. The README was rewritten for the trained model.
 
 ---
 
