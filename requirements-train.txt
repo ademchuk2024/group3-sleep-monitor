@@ -1,0 +1,10 @@
+# Extra packages needed only to TRAIN the models (on a laptop or in Google Colab).
+# The online app does NOT install these. Install with:
+#   pip install -r requirements.txt -r requirements-train.txt
+# PyTorch is left out on purpose: Google Colab already has it, and on a laptop
+# install it from https://pytorch.org (it was tested with torch 2.15.0).
+scikit-learn==1.9.1
+joblib==1.6.0
+onnx==1.23.2
+onnxruntime==1.32.0
+certifi==2026.10.23

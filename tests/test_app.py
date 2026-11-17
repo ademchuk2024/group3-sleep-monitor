@@ -36,6 +36,13 @@ def test_the_sample_night_runs_through_the_whole_pipeline(page):
     assert set(values) == {"Total time", "Awake", "REM", "Light", "Deep"}
 
 
-def test_the_page_still_says_the_model_is_a_placeholder(page):
+def test_the_page_is_honest_about_the_model(page):
+    """With the trained model: never presented as a diagnosis. Without it: a placeholder warning."""
+    import model
     page.button[0].click().run()
-    assert any("Placeholder model" in w.value for w in page.warning)
+    if model.IS_PLACEHOLDER:
+        assert any("Placeholder model" in w.value for w in page.warning)
+    else:
+        notes = " ".join(i.value for i in page.info)
+        assert "not a diagnosis" in notes
+        assert "macro F1" in notes                      # the measured score is shown, not hidden

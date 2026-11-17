@@ -1,0 +1,243 @@
+{
+ "label": "forest-default-magnitude-common_floor-balanced",
+ "kind": "forest",
+ "scored_on": "validation",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "magnitude",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": false,
+  "datasets": null,
+  "score_on": "validation",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": false,
+  "balanced": true
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 10.2,
+ "training": {},
+ "result": {
+  "overall": {
+   "windows": 34157,
+   "accuracy": 0.4241590303598091,
+   "macro_f1": 0.3796903671007328,
+   "kappa": 0.23365569760102814,
+   "per_stage": {
+    "awake": {
+     "precision": 0.7549846625766872,
+     "recall": 0.6507477484921094,
+     "f1": 0.6990015531395607,
+     "windows": 12103
+    },
+    "light": {
+     "precision": 0.5569395017793595,
+     "recall": 0.2615052565619996,
+     "f1": 0.35590088596200314,
+     "windows": 14363
+    },
+    "deep": {
+     "precision": 0.16048455254014463,
+     "recall": 0.4052644059758122,
+     "f1": 0.2299206242432396,
+     "windows": 4217
+    },
+    "REM": {
+     "precision": 0.18114339861023374,
+     "recall": 0.3301669545192861,
+     "f1": 0.23393840505812769,
+     "windows": 3474
+    }
+   },
+   "confusion_matrix": [
+    [
+     7876,
+     498,
+     2966,
+     763
+    ],
+    [
+     2015,
+     3756,
+     4872,
+     3720
+    ],
+    [
+     309,
+     1497,
+     1709,
+     702
+    ],
+    [
+     232,
+     993,
+     1102,
+     1147
+    ]
+   ]
+  },
+  "by_dataset": {
+   "newcastle": {
+    "windows": 17887,
+    "accuracy": 0.4807402023816179,
+    "macro_f1": 0.27035330037069266,
+    "kappa": 0.22245766223996893,
+    "per_stage": {
+     "awake": {
+      "precision": 0.8137969713965227,
+      "recall": 0.6988729409498121,
+      "f1": 0.7519693200663351,
+      "windows": 10381
+     },
+     "light": {
+      "precision": 0.5174418604651163,
+      "recall": 0.016933028919330288,
+      "f1": 0.03279292557111275,
+      "windows": 5256
+     },
+     "deep": {
+      "precision": 0.14763969171483624,
+      "recall": 0.8173333333333334,
+      "f1": 0.25010199918400655,
+      "windows": 1500
+     },
+     "REM": {
+      "precision": 0.05846774193548387,
+      "recall": 0.03866666666666667,
+      "f1": 0.04654895666131622,
+      "windows": 750
+     }
+    },
+    "confusion_matrix": [
+     [
+      7255,
+      41,
+      2879,
+      206
+     ],
+     [
+      1317,
+      89,
+      3608,
+      242
+     ],
+     [
+      225,
+      30,
+      1226,
+      19
+     ],
+     [
+      118,
+      12,
+      591,
+      29
+     ]
+    ]
+   },
+   "walch": {
+    "windows": 16270,
+    "accuracy": 0.3619545175169023,
+    "macro_f1": 0.32581493047642396,
+    "kappa": 0.061572809049685664,
+    "per_stage": {
+     "awake": {
+      "precision": 0.40936058009228743,
+      "recall": 0.3606271777003484,
+      "f1": 0.383451682618092,
+      "windows": 1722
+     },
+     "light": {
+      "precision": 0.5579732197200243,
+      "recall": 0.40265729658504446,
+      "f1": 0.4677594234326169,
+      "windows": 9107
+     },
+     "deep": {
+      "precision": 0.20597014925373133,
+      "recall": 0.1777695988222304,
+      "f1": 0.1908336625839589,
+      "windows": 2717
+     },
+     "REM": {
+      "precision": 0.19156956819739548,
+      "recall": 0.4104258443465492,
+      "f1": 0.26121495327102806,
+      "windows": 2724
+     }
+    },
+    "confusion_matrix": [
+     [
+      621,
+      457,
+      87,
+      557
+     ],
+     [
+      698,
+      3667,
+      1264,
+      3478
+     ],
+     [
+      84,
+      1467,
+      483,
+      683
+     ],
+     [
+      114,
+      981,
+      511,
+      1118
+     ]
+    ]
+   }
+  }
+ }
+}

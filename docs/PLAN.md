@@ -6,8 +6,8 @@ to D1 to D6.
 | Phase | Status |
 |---|---|
 | 1 Data | Done and approved. Newcastle: 13 people shifted and used for stage labels, 27 for whole-night numbers (see `docs/DATASETS.md`) |
-| 2 Signal processing | Done, waiting for Anna's go-ahead for Phase 3. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
-| 3 Models | Not started |
+| 2 Signal processing | Done and approved. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
+| 3 Models | Done on the laptop data, waiting for Anna's go-ahead for Phase 4. See `docs/RESULTS.md`. The full-data run is ready in `notebooks/train_models.ipynb` |
 | 4 Post-processing and screening | Not started |
 | 5 Dashboard | Not started |
 
@@ -235,6 +235,12 @@ cannot be lined up, or the `.bin` files need a paid or non-Python tool.
    before choosing.
 8. Tests: every model trains on a tiny fake set, saves, loads, and returns
    probabilities that sum to 1. Metrics checked against hand-worked examples.
+
+**Outcome (17 Nov 2026):** all of the above is done, except the Transformer,
+which was not tried (the LSTM fits the app well). Model 4 won: macro F1 0.43,
+kappa 0.23 on 6 test people. The app now runs it. Chosen on validation:
+magnitude input, common-floor scaling, 1 s frames, balanced weights. Details
+and limits in `docs/RESULTS.md`.
 
 ### Phase 4: Post-processing and screening
 

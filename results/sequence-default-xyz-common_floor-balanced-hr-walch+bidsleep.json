@@ -1,0 +1,323 @@
+{
+ "label": "sequence-default-xyz-common_floor-balanced-hr-walch+bidsleep",
+ "kind": "sequence",
+ "scored_on": "validation",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "xyz",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": true,
+  "datasets": [
+   "walch",
+   "bidsleep"
+  ],
+  "score_on": "validation",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": false,
+  "balanced": true,
+  "use_heart_rate": true
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 124.3,
+ "training": {
+  "history": [
+   {
+    "epoch": 1,
+    "loss": 1.3259788101369685,
+    "validation_macro_f1": 0.178484424829422
+   },
+   {
+    "epoch": 2,
+    "loss": 1.2106091380119324,
+    "validation_macro_f1": 0.24515900553056258
+   },
+   {
+    "epoch": 3,
+    "loss": 1.1811977245590903,
+    "validation_macro_f1": 0.25555930665240945
+   },
+   {
+    "epoch": 4,
+    "loss": 1.1221589364788749,
+    "validation_macro_f1": 0.31679315489752274
+   },
+   {
+    "epoch": 5,
+    "loss": 1.1219236986203627,
+    "validation_macro_f1": 0.3153582554013571
+   },
+   {
+    "epoch": 6,
+    "loss": 1.071137929504568,
+    "validation_macro_f1": 0.3651844947871226
+   },
+   {
+    "epoch": 7,
+    "loss": 1.0434187840331683,
+    "validation_macro_f1": 0.3516499738906065
+   },
+   {
+    "epoch": 8,
+    "loss": 1.0346105017445304,
+    "validation_macro_f1": 0.3925070622315429
+   },
+   {
+    "epoch": 9,
+    "loss": 1.0149769755926998,
+    "validation_macro_f1": 0.35481712764580475
+   },
+   {
+    "epoch": 10,
+    "loss": 1.0022425055503845,
+    "validation_macro_f1": 0.3650104363383275
+   },
+   {
+    "epoch": 11,
+    "loss": 1.009845029224049,
+    "validation_macro_f1": 0.42322167478345
+   },
+   {
+    "epoch": 12,
+    "loss": 1.0041622492400082,
+    "validation_macro_f1": 0.3774476728643702
+   },
+   {
+    "epoch": 13,
+    "loss": 0.9826664951714602,
+    "validation_macro_f1": 0.39906809300965446
+   },
+   {
+    "epoch": 14,
+    "loss": 0.9796354553916238,
+    "validation_macro_f1": 0.4443419519669681
+   },
+   {
+    "epoch": 15,
+    "loss": 0.9588343094695698,
+    "validation_macro_f1": 0.40825615233243484
+   },
+   {
+    "epoch": 16,
+    "loss": 0.9661730202761564,
+    "validation_macro_f1": 0.405614503052867
+   },
+   {
+    "epoch": 17,
+    "loss": 0.9455967274579135,
+    "validation_macro_f1": 0.4225429528433662
+   },
+   {
+    "epoch": 18,
+    "loss": 0.9503393904729323,
+    "validation_macro_f1": 0.46479657426990567
+   },
+   {
+    "epoch": 19,
+    "loss": 0.8977924856272611,
+    "validation_macro_f1": 0.4760475307425094
+   },
+   {
+    "epoch": 20,
+    "loss": 0.9583667489615354,
+    "validation_macro_f1": 0.4569155769624803
+   },
+   {
+    "epoch": 21,
+    "loss": 0.94068182869391,
+    "validation_macro_f1": 0.42532842900373147
+   },
+   {
+    "epoch": 22,
+    "loss": 0.88246335495602,
+    "validation_macro_f1": 0.44532997290487797
+   },
+   {
+    "epoch": 23,
+    "loss": 0.8948571058836851,
+    "validation_macro_f1": 0.48844132346986935
+   },
+   {
+    "epoch": 24,
+    "loss": 0.9057099331508983,
+    "validation_macro_f1": 0.42960403831048755
+   },
+   {
+    "epoch": 25,
+    "loss": 0.8932297202673826,
+    "validation_macro_f1": 0.4511621055754982
+   },
+   {
+    "epoch": 26,
+    "loss": 0.8834747319871729,
+    "validation_macro_f1": 0.4799167900194711
+   },
+   {
+    "epoch": 27,
+    "loss": 0.8403446565974843,
+    "validation_macro_f1": 0.4698994021781117
+   },
+   {
+    "epoch": 28,
+    "loss": 0.8400022441690619,
+    "validation_macro_f1": 0.47231420725825624
+   },
+   {
+    "epoch": 29,
+    "loss": 0.838952898979187,
+    "validation_macro_f1": 0.47721726266793935
+   }
+  ],
+  "best_validation_macro_f1": 0.48844132346986935
+ },
+ "result": {
+  "overall": {
+   "windows": 16270,
+   "accuracy": 0.4910878918254456,
+   "macro_f1": 0.48844132346986935,
+   "kappa": 0.26240137499181726,
+   "per_stage": {
+    "awake": {
+     "precision": 0.5352716873212583,
+     "recall": 0.6521486643437863,
+     "f1": 0.587958115183246,
+     "windows": 1722
+    },
+    "light": {
+     "precision": 0.7186999679795069,
+     "recall": 0.4929175359613484,
+     "f1": 0.5847717058555332,
+     "windows": 9107
+    },
+    "deep": {
+     "precision": 0.6091954022988506,
+     "recall": 0.4291497975708502,
+     "f1": 0.5035629453681709,
+     "windows": 2717
+    },
+    "REM": {
+     "precision": 0.20159680638722555,
+     "recall": 0.44493392070484583,
+     "f1": 0.2774725274725275,
+     "windows": 2724
+    }
+   },
+   "confusion_matrix": [
+    [
+     1123,
+     320,
+     19,
+     260
+    ],
+    [
+     842,
+     4489,
+     565,
+     3211
+    ],
+    [
+     29,
+     193,
+     1166,
+     1329
+    ],
+    [
+     104,
+     1244,
+     164,
+     1212
+    ]
+   ]
+  },
+  "by_dataset": {
+   "walch": {
+    "windows": 16270,
+    "accuracy": 0.4910878918254456,
+    "macro_f1": 0.48844132346986935,
+    "kappa": 0.26240137499181726,
+    "per_stage": {
+     "awake": {
+      "precision": 0.5352716873212583,
+      "recall": 0.6521486643437863,
+      "f1": 0.587958115183246,
+      "windows": 1722
+     },
+     "light": {
+      "precision": 0.7186999679795069,
+      "recall": 0.4929175359613484,
+      "f1": 0.5847717058555332,
+      "windows": 9107
+     },
+     "deep": {
+      "precision": 0.6091954022988506,
+      "recall": 0.4291497975708502,
+      "f1": 0.5035629453681709,
+      "windows": 2717
+     },
+     "REM": {
+      "precision": 0.20159680638722555,
+      "recall": 0.44493392070484583,
+      "f1": 0.2774725274725275,
+      "windows": 2724
+     }
+    },
+    "confusion_matrix": [
+     [
+      1123,
+      320,
+      19,
+      260
+     ],
+     [
+      842,
+      4489,
+      565,
+      3211
+     ],
+     [
+      29,
+      193,
+      1166,
+      1329
+     ],
+     [
+      104,
+      1244,
+      164,
+      1212
+     ]
+    ]
+   }
+  }
+ }
+}

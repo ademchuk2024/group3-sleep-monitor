@@ -18,6 +18,7 @@ through a much smaller library (see export_onnx and model.py).
 """
 
 import copy
+import warnings
 
 import numpy as np
 import torch
@@ -96,6 +97,16 @@ def build_network(kind, input_shape, n_side):
     return {"dnn": DnnNet, "cnn": CnnNet, "sequence": SequenceNet}[kind](input_shape, n_side)
 
 
+def pick_device():
+    """The fastest place to run: an NVIDIA graphics card (Colab), an Apple
+    chip's graphics (a Mac), or else the ordinary processor."""
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
 # --------------------------------------------------------------------------
 # Training and predicting
 # --------------------------------------------------------------------------
@@ -112,7 +123,7 @@ class NeuralModel(StageModel):
                              seed=seed)
         self.input_shape = None
         self.network = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = pick_device()
 
     # ---- helpers ----
 
@@ -162,7 +173,7 @@ class NeuralModel(StageModel):
                     optimiser.zero_grad()
                     loss.backward()
                     optimiser.step()
-                    total_loss += float(loss)
+                    total_loss += loss.item()
                     batches += 1
             else:
                 # Cut every night into 30-minute pieces, starting at a different
@@ -189,7 +200,7 @@ class NeuralModel(StageModel):
                     loss.backward()
                     nn.utils.clip_grad_norm_(self.network.parameters(), 5.0)
                     optimiser.step()
-                    total_loss += float(loss)
+                    total_loss += loss.item()
                     batches += 1
 
             # After each round, score on the validation people. Keep the best
@@ -262,5 +273,9 @@ class NeuralModel(StageModel):
             x = torch.zeros(8, *self.input_shape)
             side = torch.zeros(8, self.n_side)
             moving = {"x": {0: "windows"}, "side": {0: "windows"}, "logits": {0: "windows"}}
-        torch.onnx.export(network, (x, side), path, input_names=["x", "side"], output_names=["logits"],
-                          dynamic_axes=moving, dynamo=False)
+        with warnings.catch_warnings():
+            # The exporter warns about LSTMs and batch sizes. We always run one
+            # night at a time, and tests/test_models.py checks the answers match.
+            warnings.simplefilter("ignore")
+            torch.onnx.export(network, (x, side), str(path), input_names=["x", "side"], output_names=["logits"],
+                              dynamic_axes=moving, dynamo=False)

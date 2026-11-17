@@ -1,0 +1,228 @@
+{
+ "label": "sequence-default-magnitude-common_floor-balanced-hr-walch+bidsleep-test",
+ "kind": "sequence",
+ "scored_on": "test",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "magnitude",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": true,
+  "datasets": [
+   "walch",
+   "bidsleep"
+  ],
+  "score_on": "test",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": true,
+  "balanced": true,
+  "use_heart_rate": true
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 43.0,
+ "training": {
+  "history": [
+   {
+    "epoch": 1,
+    "loss": 1.3215425610542297,
+    "validation_macro_f1": 0.18065585430069458
+   },
+   {
+    "epoch": 2,
+    "loss": 1.2156018235466697,
+    "validation_macro_f1": 0.2588371066524118
+   },
+   {
+    "epoch": 3,
+    "loss": 1.1517918841405348,
+    "validation_macro_f1": 0.26433676558124297
+   },
+   {
+    "epoch": 4,
+    "loss": 1.1068494482473894,
+    "validation_macro_f1": 0.4326623225756094
+   },
+   {
+    "epoch": 5,
+    "loss": 1.1054029166698456,
+    "validation_macro_f1": 0.2531337991850268
+   },
+   {
+    "epoch": 6,
+    "loss": 1.060819531028921,
+    "validation_macro_f1": 0.35709547973414646
+   },
+   {
+    "epoch": 7,
+    "loss": 1.0281519266692074,
+    "validation_macro_f1": 0.3592578465964986
+   },
+   {
+    "epoch": 8,
+    "loss": 1.0025738017125563,
+    "validation_macro_f1": 0.34692034307114805
+   },
+   {
+    "epoch": 9,
+    "loss": 1.0005875717509876,
+    "validation_macro_f1": 0.3772020370654439
+   },
+   {
+    "epoch": 10,
+    "loss": 0.9749479700218547,
+    "validation_macro_f1": 0.40195642511653046
+   }
+  ],
+  "best_validation_macro_f1": 0.4326623225756094
+ },
+ "result": {
+  "overall": {
+   "windows": 19611,
+   "accuracy": 0.5312324715720769,
+   "macro_f1": 0.4395763888757882,
+   "kappa": 0.24604324657536666,
+   "per_stage": {
+    "awake": {
+     "precision": 0.23129734848484848,
+     "recall": 0.6817864619678995,
+     "f1": 0.34541276294855927,
+     "windows": 1433
+    },
+    "light": {
+     "precision": 0.6405143007084755,
+     "recall": 0.6671221645258267,
+     "f1": 0.6535475234270416,
+     "windows": 10977
+    },
+    "deep": {
+     "precision": 0.7042747021723896,
+     "recall": 0.2585541548752251,
+     "f1": 0.37824614226571324,
+     "windows": 3887
+    },
+    "REM": {
+     "precision": 0.4404432132963989,
+     "recall": 0.33584791792395896,
+     "f1": 0.3810991268618387,
+     "windows": 3314
+    }
+   },
+   "confusion_matrix": [
+    [
+     977,
+     374,
+     0,
+     82
+    ],
+    [
+     2429,
+     7323,
+     357,
+     868
+    ],
+    [
+     156,
+     2262,
+     1005,
+     464
+    ],
+    [
+     662,
+     1474,
+     65,
+     1113
+    ]
+   ]
+  },
+  "by_dataset": {
+   "walch": {
+    "windows": 19611,
+    "accuracy": 0.5312324715720769,
+    "macro_f1": 0.4395763888757882,
+    "kappa": 0.24604324657536666,
+    "per_stage": {
+     "awake": {
+      "precision": 0.23129734848484848,
+      "recall": 0.6817864619678995,
+      "f1": 0.34541276294855927,
+      "windows": 1433
+     },
+     "light": {
+      "precision": 0.6405143007084755,
+      "recall": 0.6671221645258267,
+      "f1": 0.6535475234270416,
+      "windows": 10977
+     },
+     "deep": {
+      "precision": 0.7042747021723896,
+      "recall": 0.2585541548752251,
+      "f1": 0.37824614226571324,
+      "windows": 3887
+     },
+     "REM": {
+      "precision": 0.4404432132963989,
+      "recall": 0.33584791792395896,
+      "f1": 0.3810991268618387,
+      "windows": 3314
+     }
+    },
+    "confusion_matrix": [
+     [
+      977,
+      374,
+      0,
+      82
+     ],
+     [
+      2429,
+      7323,
+      357,
+      868
+     ],
+     [
+      156,
+      2262,
+      1005,
+      464
+     ],
+     [
+      662,
+      1474,
+      65,
+      1113
+     ]
+    ]
+   }
+  }
+ }
+}

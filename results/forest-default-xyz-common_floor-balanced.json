@@ -1,0 +1,243 @@
+{
+ "label": "forest-default-xyz-common_floor-balanced",
+ "kind": "forest",
+ "scored_on": "validation",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "xyz",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": false,
+  "datasets": null,
+  "score_on": "validation",
+  "epochs": 40,
+  "seed": 0,
+  "label": null,
+  "save": false,
+  "balanced": true
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 14.8,
+ "training": {},
+ "result": {
+  "overall": {
+   "windows": 34157,
+   "accuracy": 0.4161665251632169,
+   "macro_f1": 0.3741804326615635,
+   "kappa": 0.2260354652109859,
+   "per_stage": {
+    "awake": {
+     "precision": 0.7673424766448023,
+     "recall": 0.637941006362059,
+     "f1": 0.6966839612000902,
+     "windows": 12103
+    },
+    "light": {
+     "precision": 0.546968787515006,
+     "recall": 0.2537770660725475,
+     "f1": 0.34669710372378365,
+     "windows": 14363
+    },
+    "deep": {
+     "precision": 0.15520833333333334,
+     "recall": 0.4239981029167655,
+     "f1": 0.22723517824235878,
+     "windows": 4217
+    },
+    "REM": {
+     "precision": 0.17949585518524785,
+     "recall": 0.30541162924582616,
+     "f1": 0.22610548748002132,
+     "windows": 3474
+    }
+   },
+   "confusion_matrix": [
+    [
+     7721,
+     584,
+     3191,
+     607
+    ],
+    [
+     1836,
+     3645,
+     5342,
+     3540
+    ],
+    [
+     269,
+     1457,
+     1788,
+     703
+    ],
+    [
+     236,
+     978,
+     1199,
+     1061
+    ]
+   ]
+  },
+  "by_dataset": {
+   "newcastle": {
+    "windows": 17887,
+    "accuracy": 0.4722983172136188,
+    "macro_f1": 0.2599602347834426,
+    "kappa": 0.22003499192940087,
+    "per_stage": {
+     "awake": {
+      "precision": 0.8342736248236954,
+      "recall": 0.6837491571139582,
+      "f1": 0.7515485203028218,
+      "windows": 10381
+     },
+     "light": {
+      "precision": 0.28753993610223644,
+      "recall": 0.017123287671232876,
+      "f1": 0.03232178128927994,
+      "windows": 5256
+     },
+     "deep": {
+      "precision": 0.13998435928946487,
+      "recall": 0.8353333333333334,
+      "f1": 0.23978566644340255,
+      "windows": 1500
+     },
+     "REM": {
+      "precision": 0.06086956521739131,
+      "recall": 0.009333333333333334,
+      "f1": 0.016184971098265895,
+      "windows": 750
+     }
+    },
+    "confusion_matrix": [
+     [
+      7098,
+      161,
+      3076,
+      46
+     ],
+     [
+      1124,
+      90,
+      3997,
+      45
+     ],
+     [
+      174,
+      56,
+      1253,
+      17
+     ],
+     [
+      112,
+      6,
+      625,
+      7
+     ]
+    ]
+   },
+   "walch": {
+    "windows": 16270,
+    "accuracy": 0.3544560540872772,
+    "macro_f1": 0.32253430532019856,
+    "kappa": 0.05812855352462559,
+    "per_stage": {
+     "awake": {
+      "precision": 0.4009009009009009,
+      "recall": 0.3617886178861789,
+      "f1": 0.3803418803418804,
+      "windows": 1722
+     },
+     "light": {
+      "precision": 0.5597543693906472,
+      "recall": 0.390359064455913,
+      "f1": 0.4599560098330961,
+      "windows": 9107
+     },
+     "deep": {
+      "precision": 0.20825223822499025,
+      "recall": 0.19690835480309166,
+      "f1": 0.2024214907302308,
+      "windows": 2717
+     },
+     "REM": {
+      "precision": 0.1818495514147688,
+      "recall": 0.3869309838472834,
+      "f1": 0.24741784037558687,
+      "windows": 2724
+     }
+    },
+    "confusion_matrix": [
+     [
+      623,
+      423,
+      115,
+      561
+     ],
+     [
+      712,
+      3555,
+      1345,
+      3495
+     ],
+     [
+      95,
+      1401,
+      535,
+      686
+     ],
+     [
+      124,
+      972,
+      574,
+      1054
+     ]
+    ]
+   }
+  }
+ }
+}

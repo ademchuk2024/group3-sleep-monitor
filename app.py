@@ -44,8 +44,7 @@ def run_pipeline(file_bytes):
 
     # Only windows without problems go to the model. The others are skipped
     # and show up as empty stretches on the timeline.
-    usable = np.flatnonzero(processed.valid)
-    stages, confidences = model.predict_stages(processed.spec_xyz[usable])
+    usable, stages, confidences = model.predict(processed)
 
     # One row per usable window in a results table.
     results = pd.DataFrame({
@@ -169,6 +168,16 @@ if model.IS_PLACEHOLDER:
         "**Placeholder model.** These sleep stages are made up to show how the app works, "
         "so they are not real results. The team's trained model will replace it.",
         icon=":material/science:",
+    )
+else:
+    scores = model.ABOUT["test_scores"]
+    st.info(
+        "**A screening aid, not a diagnosis.** Sleep stages are estimated from wrist movement"
+        + (" and heart rate" if model.ABOUT["use_heart_rate"] else "")
+        + f". On people the model never saw, it agreed with sleep experts on {scores['accuracy']:.0%} "
+        f"of 5-second windows (macro F1 {scores['macro_f1']:.2f}, kappa {scores['kappa']:.2f}). "
+        "Only a sleep study (polysomnography) can diagnose a sleep disorder.",
+        icon=":material/info:",
     )
 
 # Step 1: get a file, either uploaded or the sample.

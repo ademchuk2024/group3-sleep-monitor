@@ -1,0 +1,333 @@
+{
+ "label": "sequence-magnitude-seed2",
+ "kind": "sequence",
+ "scored_on": "validation",
+ "settings": {
+  "kinds": null,
+  "tag": "default",
+  "version": "magnitude",
+  "norm": "common_floor",
+  "unbalanced": false,
+  "heart_rate": false,
+  "datasets": null,
+  "score_on": "validation",
+  "epochs": 40,
+  "seed": 2,
+  "label": "sequence-magnitude-seed2",
+  "save": false,
+  "balanced": true,
+  "use_heart_rate": false
+ },
+ "sets": {
+  "train": {
+   "bidsleep": {
+    "people": 2,
+    "nights": 3,
+    "windows": 16393
+   },
+   "newcastle": {
+    "people": 8,
+    "nights": 15,
+    "windows": 98190
+   },
+   "walch": {
+    "people": 21,
+    "nights": 21,
+    "windows": 104618
+   }
+  },
+  "validation": {
+   "newcastle": {
+    "people": 3,
+    "nights": 3,
+    "windows": 17887
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 16270
+   }
+  },
+  "test": {
+   "newcastle": {
+    "people": 2,
+    "nights": 2,
+    "windows": 12186
+   },
+   "walch": {
+    "people": 4,
+    "nights": 4,
+    "windows": 19611
+   }
+  }
+ },
+ "training_seconds": 129.5,
+ "training": {
+  "history": [
+   {
+    "epoch": 1,
+    "loss": 1.2697695615964057,
+    "validation_macro_f1": 0.3847645205664329
+   },
+   {
+    "epoch": 2,
+    "loss": 1.1299370741232848,
+    "validation_macro_f1": 0.3849357926307627
+   },
+   {
+    "epoch": 3,
+    "loss": 1.1597198754549027,
+    "validation_macro_f1": 0.3206250122554913
+   },
+   {
+    "epoch": 4,
+    "loss": 1.0910980373620986,
+    "validation_macro_f1": 0.3856594362380385
+   },
+   {
+    "epoch": 5,
+    "loss": 1.0542279988527299,
+    "validation_macro_f1": 0.4489429624001928
+   },
+   {
+    "epoch": 6,
+    "loss": 1.0420113772153854,
+    "validation_macro_f1": 0.45789494374509515
+   },
+   {
+    "epoch": 7,
+    "loss": 1.0356073150267968,
+    "validation_macro_f1": 0.44833256742587163
+   },
+   {
+    "epoch": 8,
+    "loss": 1.0515072483282824,
+    "validation_macro_f1": 0.4539915980679918
+   },
+   {
+    "epoch": 9,
+    "loss": 1.04297586530447,
+    "validation_macro_f1": 0.44243070039952775
+   },
+   {
+    "epoch": 10,
+    "loss": 1.0379860355303838,
+    "validation_macro_f1": 0.4646628094549242
+   },
+   {
+    "epoch": 11,
+    "loss": 1.0010885412876422,
+    "validation_macro_f1": 0.5071243820456863
+   },
+   {
+    "epoch": 12,
+    "loss": 1.015965380729773,
+    "validation_macro_f1": 0.46594797876350225
+   },
+   {
+    "epoch": 13,
+    "loss": 1.0185445532202722,
+    "validation_macro_f1": 0.4414023927916586
+   },
+   {
+    "epoch": 14,
+    "loss": 1.0069611355662347,
+    "validation_macro_f1": 0.47409866676977264
+   },
+   {
+    "epoch": 15,
+    "loss": 1.0089826996509845,
+    "validation_macro_f1": 0.4812205182266713
+   },
+   {
+    "epoch": 16,
+    "loss": 0.9993453484315139,
+    "validation_macro_f1": 0.48602462800940577
+   },
+   {
+    "epoch": 17,
+    "loss": 1.0109785452485085,
+    "validation_macro_f1": 0.461152613103825
+   }
+  ],
+  "best_validation_macro_f1": 0.5071243820456863
+ },
+ "result": {
+  "overall": {
+   "windows": 34157,
+   "accuracy": 0.6135199227098399,
+   "macro_f1": 0.5071243820456863,
+   "kappa": 0.4370632072269716,
+   "per_stage": {
+    "awake": {
+     "precision": 0.7639544570952513,
+     "recall": 0.9091960670908039,
+     "f1": 0.8302712491040103,
+     "windows": 12103
+    },
+    "light": {
+     "precision": 0.6694999547879555,
+     "recall": 0.5154911926477755,
+     "f1": 0.5824876091574227,
+     "windows": 14363
+    },
+    "deep": {
+     "precision": 0.3241094147582697,
+     "recall": 0.24164097699786577,
+     "f1": 0.276864556446135,
+     "windows": 4217
+    },
+    "REM": {
+     "precision": 0.2754954954954955,
+     "recall": 0.4401266551525619,
+     "f1": 0.3388741134751774,
+     "windows": 3474
+    }
+   },
+   "confusion_matrix": [
+    [
+     11004,
+     735,
+     216,
+     148
+    ],
+    [
+     2970,
+     7404,
+     1672,
+     2317
+    ],
+    [
+     211,
+     1431,
+     1019,
+     1556
+    ],
+    [
+     219,
+     1489,
+     237,
+     1529
+    ]
+   ]
+  },
+  "by_dataset": {
+   "newcastle": {
+    "windows": 17887,
+    "accuracy": 0.6855817073852518,
+    "macro_f1": 0.4417570394307923,
+    "kappa": 0.43048551050207784,
+    "per_stage": {
+     "awake": {
+      "precision": 0.8088617137113661,
+      "recall": 0.9302572006550429,
+      "f1": 0.8653225806451613,
+      "windows": 10381
+     },
+     "light": {
+      "precision": 0.5630824372759856,
+      "recall": 0.298896499238965,
+      "f1": 0.39050459855828984,
+      "windows": 5256
+     },
+     "deep": {
+      "precision": 0.3224254090471607,
+      "recall": 0.67,
+      "f1": 0.43534762833008445,
+      "windows": 1500
+     },
+     "REM": {
+      "precision": 0.7317073170731707,
+      "recall": 0.04,
+      "f1": 0.07585335018963336,
+      "windows": 750
+     }
+    },
+    "confusion_matrix": [
+     [
+      9657,
+      508,
+      216,
+      0
+     ],
+     [
+      2008,
+      1571,
+      1667,
+      10
+     ],
+     [
+      166,
+      328,
+      1005,
+      1
+     ],
+     [
+      108,
+      383,
+      229,
+      30
+     ]
+    ]
+   },
+   "walch": {
+    "windows": 16270,
+    "accuracy": 0.5342962507682852,
+    "macro_f1": 0.4222885770894173,
+    "kappa": 0.27518832741604865,
+    "per_stage": {
+     "awake": {
+      "precision": 0.5464503042596349,
+      "recall": 0.7822299651567944,
+      "f1": 0.6434201098638643,
+      "windows": 1722
+     },
+     "light": {
+      "precision": 0.7054057322529931,
+      "recall": 0.6404963215109256,
+      "f1": 0.6713858195211785,
+      "windows": 9107
+     },
+     "deep": {
+      "precision": 0.5185185185185185,
+      "recall": 0.005152741994847258,
+      "f1": 0.01020408163265306,
+      "windows": 2717
+     },
+     "REM": {
+      "precision": 0.27210019967326193,
+      "recall": 0.5502936857562408,
+      "f1": 0.3641442973399733,
+      "windows": 2724
+     }
+    },
+    "confusion_matrix": [
+     [
+      1347,
+      227,
+      0,
+      148
+     ],
+     [
+      962,
+      5833,
+      5,
+      2307
+     ],
+     [
+      45,
+      1103,
+      14,
+      1555
+     ],
+     [
+      111,
+      1106,
+      8,
+      1499
+     ]
+    ]
+   }
+  }
+ }
+}
