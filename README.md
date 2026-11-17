@@ -1,14 +1,17 @@
-# IMU Sleep Monitor (Group 3)
+# IMU Sleep Monitor
 
-Software for our Engineering Design 1 project, *Wearable IMU-Based System for
-Continuous Sleep and Movement Monitoring*. You upload one night of wrist motion
-as a CSV file. The web page shows:
+This is the software for our Engineering Design 1 project (Group 3). The project
+is a wearable IMU system that monitors sleep and movement. My part is the
+software: you upload one night of wrist motion as a CSV file, and the web page shows:
 
 - a sleep timeline (Awake, Light, Deep, REM), with unsure stretches marked
 - the night in numbers (sleep time, sleep efficiency, awakenings, restless minutes)
 - a screening result: *Typical*, *Somewhat unusual* or *Unusual night*
 - flagged periods, each explained in one plain sentence
 - a PDF report and a JSON file to download
+
+Live app: https://group3-sleep-monitor-whypcy7pqmmbzirsop6aii.streamlit.app/
+(it shows the new version once this branch is merged into `main`)
 
 > **This is a screening aid, not a diagnosis.** The stages come from wrist
 > movement alone, which cannot see brain waves. On people it never saw, the
