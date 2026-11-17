@@ -84,3 +84,22 @@ def to_four_stages(lab_stages):
     Returns an int8 array: positions in config.STAGES, or -1 for unknown.
     """
     return translate_codes(lab_stages, LAB_TO_FOUR, "to_four_stages")
+
+
+def labels_for_windows(lab_stages, n_windows):
+    """Give every 5-second window the stage of the 30-second period it lies in.
+
+    lab_stages: one LAB_* code per 30 s, as the experts scored it.
+    Returns our four stages (positions in config.STAGES, -1 = unknown), one
+    per window. Each 30 s period covers six windows, so each expert label is
+    simply repeated six times. Windows past the last label get -1.
+    """
+    per_label = config.LABEL_EPOCH_SECONDS / config.WINDOW_SECONDS
+    if per_label != int(per_label):
+        raise ValueError("The label length must be a whole number of windows.")
+    four = to_four_stages(np.asarray(lab_stages))
+    repeated = np.repeat(four, int(per_label))
+    out = np.full(n_windows, STAGE_UNKNOWN, dtype=np.int8)
+    n = min(n_windows, len(repeated))
+    out[:n] = repeated[:n]
+    return out

@@ -5,8 +5,8 @@ to D1 to D6.
 
 | Phase | Status |
 |---|---|
-| 1 Data | Done, waiting for Anna's go-ahead for Phase 2. Newcastle decision made on 17 November 2026: 13 people shifted and used for stage labels, 27 for whole-night numbers (see `docs/DATASETS.md`) |
-| 2 Signal processing | Not started |
+| 1 Data | Done and approved. Newcastle: 13 people shifted and used for stage labels, 27 for whole-night numbers (see `docs/DATASETS.md`) |
+| 2 Signal processing | Done, waiting for Anna's go-ahead for Phase 3. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
 | 3 Models | Not started |
 | 4 Post-processing and screening | Not started |
 | 5 Dashboard | Not started |

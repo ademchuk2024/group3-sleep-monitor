@@ -142,3 +142,54 @@ def test_every_night_on_disk_belongs_to_someone_in_the_split():
     for dataset in ("walch", "bidsleep", "newcastle"):
         for person, _ in catalog.list_nights(dataset, "whole_night"):
             assert split.set_of(saved, f"{dataset}:{person}") in split.SETS
+
+
+# ---------------- Phase 2: the signal pipeline on real nights ----------------
+
+def test_pipeline_on_a_real_night_from_each_dataset():
+    from sleepmon import pipeline
+    for dataset, person, night_id, n_labels in (("walch", "1455390", "1", 990),
+                                                ("bidsleep", "Bidslab00", "1", 935),
+                                                ("newcastle", "50", "left", 1148)):
+        result = pipeline.process_night(catalog.load_night(dataset, person, night_id))
+        assert result.n_windows == 6 * n_labels                       # six 5 s windows per 30 s label
+        assert result.spec_xyz.shape == (6 * n_labels, 3, 12, 9)
+        assert result.valid.mean() > 0.99                             # these three nights are complete
+        assert np.isfinite(result.spec_xyz[result.valid]).all()
+        assert result.info["source_rate_ok"] and result.info["labels_aligned"]
+        # Every device is read as 1 g at rest once it is on the common clock.
+        size = np.linalg.norm(result.posture[result.valid], axis=1)
+        assert np.median(size) == pytest.approx(1.0, abs=0.05)
+        # Stages are our four codes (or -1 for unscored). Not everyone has every
+        # stage: this Walch person was never scored in deep sleep.
+        found = set(np.unique(result.stages).tolist())
+        assert found <= {-1, 0, 1, 2, 3} and len(found - {-1}) >= 3
+
+
+def test_pipeline_keeps_going_through_a_night_with_long_gaps():
+    from sleepmon import pipeline
+    from sleepmon import signal_processing as sp
+    # This watch stopped recording after 67 minutes of an 8 hour night.
+    result = pipeline.process_night(catalog.load_night("walch", "7749105", "1"))
+    assert result.n_windows == 5760
+    assert 0.10 < result.valid.mean() < 0.16
+    assert (result.problem[~result.valid] & sp.GAP).all()
+    assert np.isnan(result.spec_xyz[~result.valid]).all()
+
+
+def test_pipeline_marks_the_recordings_that_were_made_too_slowly():
+    from sleepmon import pipeline
+    slow = pipeline.process_night(catalog.load_night("walch", "5383425", "1"))     # 10 readings per second
+    assert slow.info["source_rate_ok"] is False
+    medium = pipeline.process_night(catalog.load_night("walch", "9618981", "1"))   # 33 per second: enough for 12 Hz
+    assert medium.info["source_rate_ok"] is True
+
+
+def test_no_real_window_is_mistaken_for_a_stuck_sensor():
+    from sleepmon import pipeline
+    from sleepmon import signal_processing as sp
+    # The stuck-sensor rule must never throw away real, very still sleep.
+    for dataset, person, night_id in (("walch", "1455390", "1"), ("bidsleep", "Bidslab00", "1"),
+                                      ("newcastle", "50", "left"), ("newcastle", "17", "right")):
+        result = pipeline.process_night(catalog.load_night(dataset, person, night_id))
+        assert not (result.problem & sp.FLAT).any()

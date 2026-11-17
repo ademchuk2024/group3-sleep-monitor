@@ -16,12 +16,12 @@ This is stage 4 of our block diagram, *Cloud Processing and Tool Implementation*
 
 | Team part | Who | How it plugs in here |
 |-----------|-----|----------------------|
-| Data preprocessing and spectrograms | Khizer | Replace the functions in `preprocess.py` with the real code, so uploads are processed exactly like the training data |
+| Data preprocessing and spectrograms | Anna | Done in `sleepmon/` (see `docs/SIGNAL_PROCESSING.md`). Uploads and training data go through the same code |
 | CNN, LSTM/Transformer and DNN models | Madison, Zeporah, Amari | The best model replaces `predict_stages()` in `model.py` |
 | Hardware and data collection | Madison | The sensor's CSV export should use the column names below |
 | Results and visualization (stage 5) | Anna | The timeline, summary tiles and confidence flags on the page |
 
-**How to review:** start with `config.py` (settings), then `preprocess.py`, `model.py`
+**How to review:** start with `config.py` (settings), then `sleepmon/pipeline.py`, `model.py`
 and `app.py`. Every file has short comments explaining each step. Leave questions as
 GitHub Issues or comments on a pull request.
 
@@ -39,7 +39,12 @@ Uploads stay in memory only. They are never saved to disk.
 | File | What it does |
 |------|--------------|
 | `config.py` | All settings: sampling rate (50 Hz), window length (5 s), confidence threshold, colors |
-| `preprocess.py` | Checks the CSV, cleans it, makes windows and spectrograms |
+| `sleepmon/io_csv.py` | Reads the CSV and explains what is wrong with a bad one |
+| `sleepmon/signal_processing.py` | Resampling, gravity filter, windows, bad-window flags, spectrograms |
+| `sleepmon/pipeline.py` | Runs those steps in order, for uploads and for training data |
+| `sleepmon/datasets/` | Loaders for the open training datasets and the train/validation/test split |
+| `docs/` | The plan, the CSV format, the datasets and the signal processing write-ups |
+| `tests/` | The tests. Run them with `python -m pytest` |
 | `model.py` | **Placeholder** model: `predict_stages(spectrograms)` returns fake stages + confidence |
 | `app.py` | The web page (Streamlit) |
 | `.streamlit/config.toml` | Page colors and fonts (hidden folder: press `Cmd + Shift + .` in Finder to see it) |
@@ -48,17 +53,19 @@ Uploads stay in memory only. They are never saved to disk.
 
 ## CSV format
 
-One row per sensor reading. Column names must be:
+The full description is in [docs/CSV_FORMAT.md](docs/CSV_FORMAT.md). In short: one row per
+sensor reading, with these column names on the first line.
 
 ```
-timestamp,ax,ay,az,gx,gy,gz
-0.00,0.0457,-0.156,1.1126,0.4846,11.7386,0.3249
-0.02,0.1411,-0.2927,0.8047,-3.6462,0.5472,-5.7396
+timestamp,ax,ay,az,gx,gy,gz,hr
+0.00,0.0121,-0.0045,0.9987,0.42,-0.31,0.05,62
+0.02,0.0118,-0.0051,0.9991,0.38,-0.29,0.07,
 ```
 
-- `timestamp` = seconds since the start
-- `ax, ay, az` = accelerometer (g)
-- `gx, gy, gz` = gyroscope (degrees per second)
+- `timestamp` = seconds, counting up
+- `ax, ay, az` = accelerometer (g). Always needed.
+- `gx, gy, gz` = gyroscope (degrees per second). Optional: all three or none.
+- `hr` = heart rate (beats per minute). Optional, and may be blank on most rows.
 
 ## Install (one time)
 
@@ -123,9 +130,12 @@ To stop the app, click the Terminal window and press `Ctrl + C`.
 Open `config.py` and edit the numbers at the top, for example:
 
 ```python
-SAMPLING_RATE_HZ = 50   # change to 100 if your sensor records 100 times per second
-WINDOW_SECONDS = 5
+LOW_CONFIDENCE_THRESHOLD = 0.60   # predictions less sure than this get a flag
+MAX_GAP_SECONDS = 0.25            # a longer pause between readings counts as a gap
 ```
+
+You do not need to change anything if your sensor records at another rate. Every
+recording is converted to 50 readings per second automatically.
 
 Save, then refresh the browser page.
 
@@ -176,7 +186,8 @@ Change the code, then in GitHub Desktop write a short summary, click
 ## For teammates: swapping in the real parts
 
 - **Real model:** replace the body of `predict_stages()` in `model.py`. Keep the same
-  input (spectrograms shaped `(windows, 6, frequencies, time_steps)`) and output
+  input (spectrograms shaped `(windows, channels, frequencies, time_steps)`) and output
   (a list of stage names and a list of confidences 0 to 1). Then set `IS_PLACEHOLDER = False`.
-- **Khizer's preprocessing:** replace the bodies of the functions in `preprocess.py`
-  with calls to the real code, so uploads are processed exactly like the training data.
+- **Preprocessing:** already done in `sleepmon/`. A model must be trained on spectrograms made
+  by `sleepmon/pipeline.py` (12 frequencies from 1 to 12 Hz, 9 time steps, log scale), because
+  that is what the app will feed it.

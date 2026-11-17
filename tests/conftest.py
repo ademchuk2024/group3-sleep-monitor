@@ -256,3 +256,38 @@ def write_newcastle(folder, stages=("W", "N1", "N2", "N3", "R", "N2"), psg_date=
         write_geneactiv_bin(path, bin_start, n_pages, rate=rate, raw_page=raw_page,
                             truncate_last_page=truncate_last_page)
     return folder
+
+
+# --------------------------------------------------------------------------
+# Fake uploads (CSV bytes in memory, like the web app receives)
+# --------------------------------------------------------------------------
+
+def make_recording_table(seconds, rate=50.0, gyro=True, heart_rate=False, seed=0, start=0.0):
+    """A pandas table shaped like an upload: a wrist at rest with a little sensor noise.
+
+    Acceleration: about 1 g on z. Rotation: about 0. Heart rate (if asked
+    for): one value every 5 seconds, blank on all other rows, like a real watch.
+    """
+    import pandas as pd
+    rng = np.random.default_rng(seed)
+    n = int(round(seconds * rate))
+    table = pd.DataFrame({"timestamp": start + np.arange(n) / rate})
+    accel = rng.normal(0, 0.003, size=(n, 3))
+    accel[:, 2] += 1.0
+    for i, name in enumerate(("ax", "ay", "az")):
+        table[name] = accel[:, i]
+    if gyro:
+        rotation = rng.normal(0, 0.5, size=(n, 3))
+        for i, name in enumerate(("gx", "gy", "gz")):
+            table[name] = rotation[:, i]
+    if heart_rate:
+        hr = np.full(n, np.nan)
+        every = int(round(5 * rate))
+        hr[::every] = 60 + (np.arange(len(hr[::every])) % 10)
+        table["hr"] = hr
+    return table
+
+
+def to_csv_bytes(table, decimals=4):
+    """Turn a table into CSV bytes, the way a file upload arrives."""
+    return table.to_csv(index=False, float_format=f"%.{decimals}f").encode()

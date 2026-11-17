@@ -9,7 +9,8 @@ how much movement is in each window, and makes up a confidence score.
 HOW TO SWAP IN THE REAL MODEL (for Madison, Zeporah, Amari):
   Replace the body of predict_stages() with code that loads your trained
   model and runs it. Keep the same input and output so the app keeps working:
-    input:  spectrograms, shape (windows, 6 channels, frequencies, time steps)
+    input:  spectrograms, shape (windows, channels, frequencies, time steps),
+            log10 of movement strength, as made by sleepmon/pipeline.py
     output: a list of stage names (one of config.STAGES) and a list of
             confidence scores between 0 and 1, one of each per window.
 """

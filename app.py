@@ -1,8 +1,11 @@
 """
 app.py - The web page. Run it with:  streamlit run app.py
 
-Flow: CSV (upload or sample) -> check -> clean -> 5 s windows -> spectrograms
+Flow: CSV (upload or sample) -> sleepmon.pipeline (check, resample to 50 Hz,
+      remove gravity, 5 s windows, flag bad windows, spectrograms)
       -> model -> sleep timeline + summary.
+
+The CSV format is described in docs/CSV_FORMAT.md.
 """
 
 import os
@@ -16,8 +19,10 @@ import streamlit as st
 
 import config
 import model
-import preprocess
 from sample_data.make_sample import generate_sample_df
+from sleepmon import pipeline
+from sleepmon import signal_processing as sp
+from sleepmon.io_csv import DataProblem
 
 SAMPLE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample_data", "sample_night.csv")
 
@@ -35,22 +40,22 @@ def load_sample_bytes():
 @st.cache_data(show_spinner=False)
 def run_pipeline(file_bytes):
     """Run every step on the CSV bytes. Everything stays in memory."""
-    df = preprocess.read_and_check(file_bytes)
-    df, rows_removed = preprocess.clean(df)
-    measured_rate = preprocess.estimate_sampling_rate(df)
-    windows = preprocess.make_windows(df)
-    spectrograms, freqs, times = preprocess.make_spectrograms(windows)
-    stages, confidences = model.predict_stages(spectrograms)
+    processed = pipeline.process_csv(file_bytes)
 
-    # One row per window in a results table.
+    # Only windows without problems go to the model. The others are skipped
+    # and show up as empty stretches on the timeline.
+    usable = np.flatnonzero(processed.valid)
+    stages, confidences = model.predict_stages(processed.spec_xyz[usable])
+
+    # One row per usable window in a results table.
     results = pd.DataFrame({
-        "window": range(len(stages)),
-        "start_min": [i * config.WINDOW_SECONDS / 60 for i in range(len(stages))],
+        "window": usable,
+        "start_min": processed.window_start_s[usable] / 60,
         "stage": stages,
         "confidence": confidences,
     })
     results["low_confidence"] = results["confidence"] < config.LOW_CONFIDENCE_THRESHOLD
-    return results, spectrograms, freqs, times, rows_removed, measured_rate
+    return results, processed
 
 
 # Page colors, copied from .streamlit/config.toml so the charts match the page.
@@ -96,7 +101,11 @@ def draw_timeline(results):
 
     # Colored bars: join neighboring windows with the same stage into one bar,
     # so there are no thin seams between them.
-    run_id = (results["stage"] != results["stage"].shift()).cumsum()
+    # A new bar also starts wherever windows were skipped, so a bar never
+    # stretches across a hole in the recording.
+    stage_changed = results["stage"] != results["stage"].shift()
+    window_skipped = results["window"].diff() != 1
+    run_id = (stage_changed | window_skipped).cumsum()
     for _, run in results.groupby(run_id):
         stage = run["stage"].iloc[0]
         start, length = run["start_min"].iloc[0], len(run) * width
@@ -124,13 +133,18 @@ def draw_timeline(results):
     return fig
 
 
-def draw_spectrogram(spectrograms, freqs, times, window_index):
-    """The 6 channel spectrograms of one window, side by side in one row."""
-    fig, axes = plt.subplots(1, 6, figsize=(11, 2.0), dpi=150, sharey=True, facecolor=PAGE_BG)
-    for i, (name, ax) in enumerate(zip(config.SENSOR_COLUMNS, axes)):
-        # log10 makes small and big values both visible; +1e-12 avoids log(0).
-        ax.pcolormesh(times, freqs, 10 * np.log10(spectrograms[window_index, i] + 1e-12),
-                      shading="auto", cmap=SPECTRO_CMAP)
+def draw_spectrogram(processed, window_index):
+    """The spectrograms of one window, one panel per sensor channel, side by side."""
+    names = list(config.ACCEL_COLUMNS)
+    pictures = [processed.spec_xyz[window_index, i] for i in range(3)]
+    if processed.spec_gyro is not None:
+        names += config.GYRO_COLUMNS
+        pictures += [processed.spec_gyro[window_index, i] for i in range(3)]
+
+    fig, axes = plt.subplots(1, len(names), figsize=(11, 2.0), dpi=150, sharey=True, facecolor=PAGE_BG)
+    for name, picture, ax in zip(names, pictures, axes):
+        # The values are already on a log scale (see sleepmon/pipeline.py).
+        ax.pcolormesh(processed.frame_times_s, processed.freqs_hz, picture, shading="auto", cmap=SPECTRO_CMAP)
         ax.set_title(name, color=TEXT_SECONDARY, fontsize=9, fontfamily=MONO, loc="left")
         ax.set_xlabel("s", color=TEXT_MUTED, fontsize=8)
         style_axes(ax)
@@ -163,7 +177,8 @@ with left:
     uploaded = st.file_uploader(
         "Recorded IMU CSV",
         type=["csv"],
-        help="Columns needed: " + ", ".join(config.REQUIRED_COLUMNS),
+        help="Columns needed: " + ", ".join(config.REQUIRED_COLUMNS)
+             + ". Optional: " + ", ".join(config.GYRO_COLUMNS + [config.HR_COLUMN]) + ".",
     )
 with right:
     if st.button("Try sample night", icon=":material/play_arrow:", width="stretch"):
@@ -177,29 +192,54 @@ elif st.session_state.get("use_sample"):
     file_bytes, file_name = load_sample_bytes(), "sample_night.csv (generated)"
 else:
     st.caption(
-        f"Upload a CSV or try the sample night to begin · {config.SAMPLING_RATE_HZ} Hz, "
-        f"{config.WINDOW_SECONDS} s windows, set in config.py"
+        f"Upload a CSV or try the sample night to begin · every recording is brought to "
+        f"{config.SAMPLING_RATE_HZ} readings per second and cut into {config.WINDOW_SECONDS} s windows"
     )
     st.stop()
 
 # Step 2: run the pipeline, and show a friendly message if the file has a problem.
 try:
     with st.spinner("Processing your recording"):
-        results, spectrograms, freqs, times, rows_removed, measured_rate = run_pipeline(file_bytes)
-except preprocess.DataProblem as problem:
+        results, processed = run_pipeline(file_bytes)
+except DataProblem as problem:
     st.error(str(problem), icon=":material/error:")
     st.stop()
 
+facts = processed.info
 total_min = len(results) * config.WINDOW_SECONDS / 60
-info = f"{file_name} · {len(results)} windows × {config.WINDOW_SECONDS} s · {clock(total_min)}"
-if rows_removed:
-    info += f" · {rows_removed} broken rows removed"
+channels = "6 channels" if facts["has_gyro"] else "3 channels"
+info = f"{file_name} · {channels} · {len(results)} windows × {config.WINDOW_SECONDS} s · {clock(total_min)}"
+if facts.get("rows_with_missing_values"):
+    info += f" · {facts['rows_with_missing_values']} rows with missing values left out"
 st.caption(info)
-if abs(measured_rate - config.SAMPLING_RATE_HZ) > 0.1 * config.SAMPLING_RATE_HZ:
+
+# Windows that could not be used, in plain words.
+skipped_seconds = (processed.n_windows - len(results)) * config.WINDOW_SECONDS
+if skipped_seconds:
+    reasons = []
+    if facts["seconds_with_gap"]:
+        reasons.append(f"{clock(facts['seconds_with_gap'] / 60)} with gaps in the recording")
+    if facts["seconds_with_impossible_value"]:
+        reasons.append(f"{clock(facts['seconds_with_impossible_value'] / 60)} with values no sensor could produce")
+    if facts["seconds_with_stuck_sensor"]:
+        reasons.append(f"{clock(facts['seconds_with_stuck_sensor'] / 60)} where the sensor was stuck on one value")
     st.warning(
-        f"The timestamps suggest about {measured_rate:.0f} samples per second, but the app expects "
-        f"{config.SAMPLING_RATE_HZ}. Results may be off. Change SAMPLING_RATE_HZ in config.py if needed.",
+        f"{clock(skipped_seconds / 60)} of the recording could not be used and was skipped: "
+        + "; ".join(reasons) + ". It appears as empty stretches on the timeline.",
+        icon=":material/warning:",
+    )
+if not facts["source_rate_ok"]:
+    st.warning(
+        f"This recording has only about {facts['source_rate_hz']:.0f} readings per second. "
+        f"At least {config.MIN_SOURCE_RATE_HZ:.0f} are needed to see fast movements, so results may be less reliable.",
         icon=":material/schedule:",
+    )
+for note in facts.get("notes", []):
+    st.warning(note, icon=":material/info:")
+if facts["has_gyro"]:
+    st.caption(
+        "Rotation (gx, gy, gz) is checked and shown below, but sleep stages are worked out from "
+        "acceleration only, because no training data with rotation exists yet."
     )
 
 # Step 3: summary tiles (times as hh:mm:ss stamps).
@@ -235,10 +275,10 @@ with st.expander("Show flagged windows"):
 
 # Step 6: example spectrogram.
 st.subheader("Example spectrogram")
-window_index = st.slider("Window", 0, len(results) - 1, 0)
-row = results.iloc[window_index]
+position = st.slider("Window", 0, len(results) - 1, 0)
+row = results.iloc[position]
 st.caption(
-    f"Window {window_index} · starts {clock(row['start_min'])} · predicted {row['stage']}, "
+    f"Window {int(row['window'])} · starts {clock(row['start_min'])} · predicted {row['stage']}, "
     f"confidence {row['confidence']:.0%} · one panel per sensor channel, brighter means stronger movement"
 )
-st.pyplot(draw_spectrogram(spectrograms, freqs, times, window_index))
+st.pyplot(draw_spectrogram(processed, int(row["window"])))

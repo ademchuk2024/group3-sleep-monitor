@@ -41,3 +41,41 @@ def test_translate_codes_refuses_a_code_it_does_not_know():
 
 def test_translate_codes_handles_an_empty_list():
     assert len(labels.translate_codes(np.array([], dtype=int), {0: labels.LAB_WAKE}, "test")) == 0
+
+
+# ---------------- 30-second labels onto 5-second windows ----------------
+
+def test_each_label_covers_six_windows():
+    lab = np.array([labels.LAB_WAKE, labels.LAB_N2, labels.LAB_N3, labels.LAB_REM])
+    out = labels.labels_for_windows(lab, 24)
+    assert out.tolist() == ([labels.STAGE_AWAKE] * 6 + [labels.STAGE_LIGHT] * 6
+                            + [labels.STAGE_DEEP] * 6 + [labels.STAGE_REM] * 6)
+    assert out.dtype == np.int8
+
+
+def test_a_window_takes_the_label_of_the_period_it_lies_in():
+    # Window 7 covers seconds 35 to 40, inside the second label (30 to 60 s).
+    lab = np.array([labels.LAB_WAKE, labels.LAB_N3])
+    assert labels.labels_for_windows(lab, 12)[7] == labels.STAGE_DEEP
+    assert labels.labels_for_windows(lab, 12)[5] == labels.STAGE_AWAKE
+
+
+def test_windows_past_the_last_label_are_unknown():
+    out = labels.labels_for_windows(np.array([labels.LAB_N1]), 9)
+    assert out.tolist() == [labels.STAGE_LIGHT] * 6 + [labels.STAGE_UNKNOWN] * 3
+
+
+def test_fewer_windows_than_labels_is_fine():
+    out = labels.labels_for_windows(np.array([labels.LAB_N1, labels.LAB_REM]), 4)
+    assert out.tolist() == [labels.STAGE_LIGHT] * 4
+
+
+def test_unscored_periods_stay_unknown_in_every_window():
+    out = labels.labels_for_windows(np.array([labels.LAB_UNKNOWN, labels.LAB_WAKE]), 12)
+    assert out.tolist() == [labels.STAGE_UNKNOWN] * 6 + [labels.STAGE_AWAKE] * 6
+
+
+def test_label_length_must_be_a_whole_number_of_windows(monkeypatch):
+    monkeypatch.setattr(config, "WINDOW_SECONDS", 7)
+    with pytest.raises(ValueError, match="whole number"):
+        labels.labels_for_windows(np.array([labels.LAB_WAKE]), 5)
