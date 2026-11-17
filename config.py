@@ -12,6 +12,10 @@ SAMPLING_RATE_HZ = 50
 # Length of one window in seconds. The team agreed on 5-second windows.
 WINDOW_SECONDS = 5
 
+# Sleep labs score sleep in 30-second periods (called "epochs"). All three
+# training datasets use this length, so each epoch covers six 5-second windows.
+LABEL_EPOCH_SECONDS = 30
+
 # Spectrogram settings: each window is cut into 1-second pieces that overlap by half.
 SPECTROGRAM_SEGMENT_SECONDS = 1.0
 SPECTROGRAM_OVERLAP = 0.5  # 0.5 means 50% overlap
