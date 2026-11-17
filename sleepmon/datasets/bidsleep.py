@@ -211,6 +211,7 @@ def load_night(folder, person_id, night_id, label_kind="expert"):
             "setting": "home",
             "label_source": f"Dreem 2 EEG headband ({label_kind})",
             "group": "healthy",   # self-reported, not clinically tested
+            "labels_aligned": True,   # the dataset's authors put motion and labels on one clock
             "source_rate_hz": median_sampling_rate(time_s),
             "rows_removed": rows_removed,
         },

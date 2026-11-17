@@ -33,6 +33,14 @@ import config
 
 BIN_SECONDS = 5.0   # we measure movement in 5-second pieces
 
+# How much better the best offset must match than its nearest rival before we
+# call the result "clear". Chosen from the Walch nights, where we know the
+# right answer is about 0: every Walch night that gave a WRONG large offset
+# had a margin of 0.03 or less, and every night that gave the right answer
+# with a real peak had 0.05 or more. Walch is only 30 nights, so this is a
+# careful rule of thumb, not a law.
+MIN_CLEAR_MARGIN = 0.05
+
 
 def movement_in_bins(time_s, accel_g, start_s, end_s, bin_seconds=BIN_SECONDS):
     """How much the wrist moved in each time bin between start_s and end_s.
@@ -162,3 +170,19 @@ def estimate_for_night(night, max_offset_s=900):
     movement = movement.copy()
     movement[unknown[:len(movement)]] = np.nan
     return estimate_clock_offset(movement, 0.0, is_awake, max_offset_s)
+
+
+def peak_margin(result):
+    """How far the best offset's match stands above the best rival 5+ minutes away.
+
+    A big margin means one offset is clearly the best. A margin near 0 means
+    two quite different offsets fit about equally well, so we cannot tell
+    which is right. Returns NaN if there is nothing to compare.
+    """
+    return result["correlation"] - result["runner_up_correlation"]
+
+
+def is_clear(result, min_margin=MIN_CLEAR_MARGIN):
+    """True if an estimate from estimate_clock_offset() has one clear best offset."""
+    margin = peak_margin(result)
+    return bool(np.isfinite(result["offset_s"]) and np.isfinite(margin) and margin >= min_margin)

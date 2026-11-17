@@ -11,7 +11,7 @@ import numpy as np
 import pytest
 
 from sleepmon import labels
-from sleepmon.datasets import bidsleep, catalog, newcastle, split, walch
+from sleepmon.datasets import bidsleep, catalog, clock_check, newcastle, split, walch
 from sleepmon.datasets.common import DatasetFormatError
 
 pytestmark = pytest.mark.realdata
@@ -76,11 +76,57 @@ def test_newcastle_personal_details_stay_in_the_file():
         assert forbidden not in text
 
 
-def test_newcastle_participant_29_is_refused_as_recorded():
-    # The sleep lab file is dated one day after the accelerometer recording.
-    # Until that is resolved the loader must say so, not quietly pick a day.
+def test_newcastle_participant_29_is_never_used():
+    folder = catalog.FOLDERS["newcastle"]
+    # Normal use: refused, with the reason.
+    with pytest.raises(DatasetFormatError, match="not used"):
+        newcastle.load_night(folder, "29", "left")
+    # And the underlying fact: as recorded, the two files do not overlap at all.
     with pytest.raises(DatasetFormatError, match="does not overlap"):
-        newcastle.load_night(catalog.FOLDERS["newcastle"], "29", "left")
+        newcastle.load_night(folder, "29", "left", clock_offset_s=0)
+    for purpose in catalog.PURPOSES:
+        assert "29" not in {person for person, _ in catalog.list_nights("newcastle", purpose)}
+
+
+def test_newcastle_people_by_purpose():
+    for_stages = {person for person, _ in catalog.list_nights("newcastle", "stages")}
+    whole_night = {person for person, _ in catalog.list_nights("newcastle", "whole_night")}
+    assert for_stages == set(newcastle.CLOCK_OFFSETS_S) and len(for_stages) == 13
+    assert len(whole_night) == 27 and for_stages < whole_night
+    assert len(catalog.list_nights("newcastle", "stages")) == 25      # 13 people x 2 wrists, minus one missing wrist
+
+
+def test_newcastle_trusted_offset_is_applied_and_reproducible():
+    folder = catalog.FOLDERS["newcastle"]
+    # Participant 17: accelerometer about 15 minutes behind the sleep lab.
+    night = catalog.load_night("newcastle", "17", "left")
+    assert night.info["clock_offset_s"] == -907.5 and night.info["labels_aligned"] is True
+
+    # Estimating again from the real files and applying the rule gives the stored number.
+    results = {wrist: newcastle.estimate_clock_offset(folder, "17", wrist) for wrist in ("left", "right")}
+    offset, reason = newcastle.choose_clock_offset(results)
+    assert reason == "clear" and offset == newcastle.CLOCK_OFFSETS_S["17"]
+
+    # After the shift, the check finds (almost) nothing left to correct ...
+    left_over = clock_check.estimate_for_night(night, max_offset_s=900)
+    assert abs(left_over["offset_s"]) <= 30
+    # ... while the same night as recorded shows movement and "awake" not matching at all.
+    as_recorded = newcastle.load_night(folder, "17", "left", clock_offset_s=0)
+    assert clock_check.estimate_for_night(as_recorded, max_offset_s=60)["correlation_at_zero"] < 0.05
+    assert left_over["correlation_at_zero"] > 0.25
+
+
+def test_newcastle_person_without_a_trusted_offset_is_marked():
+    night = catalog.load_night("newcastle", "01", "left")
+    assert night.info["clock_offset_s"] == 0.0 and night.info["labels_aligned"] is False
+
+
+def test_walch_passes_the_clock_check_it_is_the_control_for():
+    # Five Walch people with ordinary recordings. Their clocks were lined up
+    # by the dataset's authors, so the check must say "about 0, and clear".
+    for person in ("1066528", "1455390", "4314139", "8173033", "8530312"):
+        result = clock_check.estimate_for_night(catalog.load_night("walch", person, "1"), max_offset_s=1800)
+        assert clock_check.is_clear(result) and abs(result["offset_s"]) <= 45
 
 
 def test_saved_split_matches_the_people_in_the_data():
@@ -94,5 +140,5 @@ def test_saved_split_matches_the_people_in_the_data():
 def test_every_night_on_disk_belongs_to_someone_in_the_split():
     saved = split.load_split(catalog.SPLIT_FILE)
     for dataset in ("walch", "bidsleep", "newcastle"):
-        for person, _ in catalog.list_nights(dataset):
+        for person, _ in catalog.list_nights(dataset, "whole_night"):
             assert split.set_of(saved, f"{dataset}:{person}") in split.SETS

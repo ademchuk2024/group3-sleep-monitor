@@ -127,6 +127,7 @@ def load_night(folder, person_id):
             "setting": "sleep lab",
             "label_source": "polysomnography",
             "group": "healthy",   # apnea and REM behavior disorder cases were excluded by the authors
+            "labels_aligned": True,   # the dataset's authors put motion and labels on one clock
             "source_rate_hz": median_sampling_rate(time_s),
             "rows_removed": rows_removed,
         },

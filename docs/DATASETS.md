@@ -32,7 +32,7 @@ be committed. `tests/test_repo_hygiene.py` fails if one ever is.
 | Stages scored from | Polysomnography (PSG, the full sleep lab study) | Dreem 2 EEG headband, corrected by one expert | PSG |
 | Label length | 30 s | 30 s | 30 s |
 | Labeled time | 227 hours | 23 hours in the 3 nights downloaded so far | 272 hours |
-| Motion and labels on the same clock? | Yes (checked) | Looks close (3 nights checked) | **No. See "The Newcastle clock problem"** |
+| Motion and labels on the same clock? | Yes (checked) | Looks close (3 nights checked) | **No.** Fixed for 13 people, see "The Newcastle clock problem" |
 | License | ODC Attribution 1.0 | ODC Attribution 1.0 | CC BY 4.0 |
 | On disk | 2.4 GB | 0.4 GB (sample), 27.9 GB (all) | 5.4 GB |
 
@@ -179,41 +179,71 @@ roughly half a minute, not to the second. The three BIDSleep nights gave
 -35, -65 and an unclear result, so BIDSleep looks close but should be
 re-checked on the full dataset in Colab.
 
-**What it says about Newcastle** (grouping is my reading of the numbers):
+**The rule for trusting an offset** (`newcastle.choose_clock_offset`). A
+person's offset is used only if all three hold:
+
+1. At least one wrist gives one clearly best offset: its match beats every
+   rival offset by at least 0.05. That limit comes from Walch. Every Walch
+   night that gave a wrong large offset had a margin of 0.03 or less. All 26
+   Walch nights that pass the limit gave the right answer.
+2. The two wrists agree to within 30 seconds. Both devices were set from the
+   same computer, so they should show the same offset.
+3. The offset is 30 minutes or less. A clock nobody set can be minutes out.
+   An hour or more points to some other mistake that we cannot check.
+
+**What it says about Newcastle:**
 
 | Result | Participants | Count |
 |---|---|---|
-| Within about 45 s, like Walch | 42, 48, 50, 52, 57, 60 | 6 |
-| Accelerometer 1.5 to 4 minutes behind | 02, 28, 39, 49, 53, 59 | 6 |
-| Accelerometer 9 to 19 minutes behind | 01, 10, 17, 21, 27, 31, 32, 35 | 8 |
-| Cannot tell (weak match, or the two wrists disagree) | 14, 23, 34, 38, 45, 51, 56 | 7 |
+| Clear offset. Shifted and used for stage labels | 02, 10, 17, 28, 31, 35, 42, 48, 50, 52, 53, 57, 60 | 13 |
+| Probably offset, but two different offsets fit about equally well | 01, 21, 27, 32, 39, 49, 59 | 7 |
+| Cannot tell (weak match, or the two wrists disagree) | 14, 23, 34, 38, 45, 51 | 6 |
+| Looks clear but is 98 minutes, too large to believe | 56 | 1 |
 | Files dated one day apart | 29 | 1 |
 
-In most of the first three rows both wrists give the same offset to within
-half a minute. For several people in the third row the match at zero offset
-is no better than chance, which is what a real misalignment looks like. Full
-numbers: run `python scripts/describe_datasets.py --clocks`.
+Among the 13 that are used, the accelerometer clock is behind the sleep lab
+clock by under 45 seconds for six people, 1.5 to 4 minutes for three, and 13
+to 18 minutes for four. After shifting, the check finds 25 seconds or less
+left to correct in all 25 recordings. For several of these people the match
+at zero offset was no better than chance before the shift, which is what a
+real misalignment looks like. Full numbers: run
+`python scripts/describe_datasets.py --clocks`.
 
 **Participant 29.** The sleep lab file is dated 7 February 2014. The
 accelerometer recorded from 18:00 on 6 February to 18:00 on 7 February, so it
 stopped before the sleep lab file starts. Moving the sleep lab date back one
 day makes them overlap, but the clock check then finds no clear match, so we
-cannot confirm the accelerometer was worn that night. The loader refuses
-this participant with a clear error.
+cannot confirm the accelerometer was worn that night. This participant is
+not used at all.
 
-**What the loader does today.** It trusts the clocks exactly as recorded
-(`clock_offset_s=0`). It can apply an offset per recording, but none is
-applied. **How to use Newcastle is an open decision for Anna.** The choices:
+### How Newcastle is used (decided 17 November 2026)
 
-1. Use Newcastle only for whole-night numbers (total sleep time, sleep
-   efficiency and so on), where a few minutes do not matter. Train the stage
-   model on Walch and BIDSleep only.
-2. Shift each night by its estimated offset, and use only the people where
-   the estimate is clear (about 20 of 28). The labels would then be good to
-   roughly half a minute. The shift is itself estimated from movement, which
-   gives the model a small unfair advantage at spotting Awake on these
-   nights. That would be stated in the results.
-3. Do not use Newcastle.
+Anna asked Claude to choose. The choice is to shift the nights whose offset
+is clear and to be strict about "clear".
+
+| Use | People | How |
+|---|---|---|
+| Training and testing the stage model (5-second windows) | 13 | Motion shifted by the person's offset. `catalog.list_nights("newcastle", "stages")` |
+| Whole-night numbers only, such as total sleep time | 27 | As recorded. A clock some minutes out hardly changes a whole-night total. To be confirmed in Phase 4. `catalog.list_nights("newcastle", "whole_night")` |
+| Not used | 1 | Participant 29 |
+
+Every loaded night carries `info["labels_aligned"]`. Labels may be used for
+5-second windows only when it is True.
+
+Why strict: the first reading of the numbers suggested about 20 usable
+people. Seven of those have two rival offsets several minutes apart that fit
+about equally well. Picking one would put wrong labels on a whole night if
+the pick were wrong, so they are left out of stage training and testing.
+
+Three things to say wherever Newcastle stage results are reported:
+
+- **The shift was estimated from movement.** We lined the labels up where
+  movement best matched "awake". That gives a model a small head start at
+  spotting Awake on these 13 nights, so those results are a little flattering.
+- **Labels are good to about half a minute, not to the second.** One 30
+  second label either side of every change of stage may be wrong.
+- **13 patients is a small group**, and only 2 of them are in the test set
+  (8 train, 3 validation). Stage results on patients will be rough.
 
 ## Who is in train, validation and test
 
@@ -230,6 +260,10 @@ a fixed seed so the result is always the same.
 | Newcastle, disorder | 20 | 14 | 3 | 3 |
 | Newcastle, no disorder | 8 | 6 | 1 | 1 |
 | All | 106 | 75 | 16 | 15 |
+
+Of the 13 Newcastle people usable for stage labels, 8 are in train, 3 in
+validation and 2 in test. The split was made before the clock check and was
+not changed afterwards.
 
 The Newcastle test group is 4 people. That is too few to judge screening on
 its own, so Phase 4 will need a different way to check screening on patients

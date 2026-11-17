@@ -32,7 +32,8 @@ from sleepmon.datasets.common import DatasetFormatError  # noqa: E402
 
 def describe(dataset):
     """Load every night of one dataset that is on disk and print a summary."""
-    nights = catalog.list_nights(dataset)
+    nights = catalog.list_nights(dataset, "whole_night")
+    for_stages = set(catalog.list_nights(dataset, "stages"))
     rates, labeled_hours, motion_hours, problems = [], [], [], []
     lab_counts = np.zeros(6, dtype=np.int64)     # unknown, W, N1, N2, N3, REM
     four_counts = np.zeros(5, dtype=np.int64)    # unknown, awake, light, deep, REM
@@ -68,6 +69,10 @@ def describe(dataset):
 
     print(f"\n## {dataset}")
     print(f"people loaded: {len(people)}   recordings loaded: {len(rates)} of {len(nights)}   with heart rate: {with_heart_rate}")
+    print(f"usable for 5-second stage labels: {len({p for p, _ in for_stages})} people, {len(for_stages)} recordings")
+    if dataset == "newcastle":
+        for person_id, reason in newcastle.EXCLUDED_PEOPLE.items():
+            print(f"not used at all: participant {person_id}. {reason}")
     if rates:
         rates = np.array(rates)
         print(f"sampling rate (Hz), per recording: lowest {rates.min():.1f}, middle {np.median(rates):.1f}, highest {rates.max():.1f}")
@@ -104,27 +109,54 @@ def describe_split():
 
 def clock_report():
     """Run the clock check on every recording and print the estimated offsets."""
+    header = "best offset   match   match at 0   runner-up        margin  clear?"
+
     print("\n## clock check: Walch and BIDSleep (the control group, expected to be about 0)")
-    print("recording                 best offset   match   match at 0   runner-up")
+    print(f"recording                 {header}")
     for dataset in ("walch", "bidsleep"):
-        for person_id, night_id in catalog.list_nights(dataset):
+        for person_id, night_id in catalog.list_nights(dataset, "stages"):
             night = catalog.load_night(dataset, person_id, night_id)
             r = clock_check.estimate_for_night(night, max_offset_s=1800)
             print(f"{dataset:9s} {person_id:>10s} {night_id:>2s}   {r['offset_s']:+8.0f} s   {r['correlation']:.2f}   "
-                  f"{r['correlation_at_zero']:10.2f}   {r['runner_up_offset_s']:+6.0f} s ({r['runner_up_correlation']:.2f})")
+                  f"{r['correlation_at_zero']:10.2f}   {r['runner_up_offset_s']:+6.0f} s ({r['runner_up_correlation']:.2f})   "
+                  f"{clock_check.peak_margin(r):6.3f}  {'yes' if clock_check.is_clear(r) else 'no'}")
 
-    print("\n## clock check: Newcastle (searching 3 hours either way)")
-    print("person wrist   best offset   match   match at 0   runner-up")
+    print("\n## clock check: Newcastle as recorded (searching 3 hours either way)")
+    print(f"person wrist   {header}")
     folder = catalog.FOLDERS["newcastle"]
+    by_person = {}
     for person_id, wrist in newcastle.list_recordings(folder):
         # Participant 29's sleep lab file is dated one day after the
         # accelerometer recording, so there is nothing to compare unless the
         # sleep lab date is moved back a day. We do that here ONLY to test it.
         day_shift = -1 if person_id == "29" else 0
         r = newcastle.estimate_clock_offset(folder, person_id, wrist, psg_day_shift=day_shift)
+        by_person.setdefault(person_id, {})[wrist] = r
         note = "  (sleep lab date moved back 1 day for this test)" if day_shift else ""
         print(f"{person_id:>6s} {wrist:5s}   {r['offset_s']:+8.0f} s   {r['correlation']:.2f}   "
-              f"{r['correlation_at_zero']:10.2f}   {r['runner_up_offset_s']:+6.0f} s ({r['runner_up_correlation']:.2f}){note}")
+              f"{r['correlation_at_zero']:10.2f}   {r['runner_up_offset_s']:+6.0f} s ({r['runner_up_correlation']:.2f})   "
+              f"{clock_check.peak_margin(r):6.3f}  {'yes' if clock_check.is_clear(r) else 'no'}{note}")
+
+    print("\n## Newcastle: which people pass the rule (newcastle.choose_clock_offset)")
+    passed = {}
+    for person_id in sorted(by_person):
+        if person_id in newcastle.EXCLUDED_PEOPLE:
+            print(f"{person_id}: not used at all (dates one day apart)")
+            continue
+        offset, reason = newcastle.choose_clock_offset(by_person[person_id])
+        if offset is None:
+            print(f"{person_id}: not used for stage labels, {reason}")
+        else:
+            passed[person_id] = offset
+            print(f"{person_id}: offset {offset:+.1f} s")
+    same = passed == newcastle.CLOCK_OFFSETS_S
+    print(f"\n{len(passed)} people pass. Matches the table stored in newcastle.py: {'YES' if same else 'NO - update CLOCK_OFFSETS_S'}")
+
+    print("\n## Newcastle after the shift (expected to be about 0, like the control group)")
+    for person_id, wrist in catalog.list_nights("newcastle", "stages"):
+        night = catalog.load_night("newcastle", person_id, wrist)
+        r = clock_check.estimate_for_night(night, max_offset_s=900)
+        print(f"{person_id:>6s} {wrist:5s}   applied {night.info['clock_offset_s']:+8.1f} s   what is left: {r['offset_s']:+5.0f} s   match {r['correlation']:.2f}")
 
 
 def main():

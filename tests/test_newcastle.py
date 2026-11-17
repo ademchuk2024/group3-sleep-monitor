@@ -308,3 +308,104 @@ def test_an_ordinary_night_is_not_mistaken_for_a_clock_change(tmp_path):
     # The night before the spring change, ending well before 01:00.
     folder = write_newcastle(tmp_path, psg_date="27/03/2015", first_clock=(23, 0, 0), stages=("W",) * 6)
     assert len(newcastle.load_night(folder, "07", "left").stages_lab) == 6
+
+
+# ---------------- deciding whose clock offset to trust ----------------
+
+def estimate(offset, match=0.40, runner_up_match=0.20):
+    """A hand-made clock check result. The default is a clear one (margin 0.20)."""
+    return {"offset_s": offset, "correlation": match, "correlation_at_zero": 0.0,
+            "runner_up_offset_s": offset - 600.0, "runner_up_correlation": runner_up_match}
+
+
+UNCLEAR = dict(match=0.30, runner_up_match=0.28)    # margin 0.02, below the limit
+
+
+def test_two_clear_wrists_that_agree_give_their_average():
+    offset, reason = newcastle.choose_clock_offset({"left": estimate(-910.0), "right": estimate(-905.0)})
+    assert offset == pytest.approx(-907.5) and reason == "clear"
+
+
+def test_one_wrist_alone_is_enough_if_it_is_clear():
+    # Participant 10 has only a left wrist file.
+    assert newcastle.choose_clock_offset({"left": estimate(-790.0)}) == (-790.0, "clear")
+
+
+def test_one_clear_wrist_and_one_unclear_wrist_that_agree_uses_the_clear_one():
+    # Like participant 28: right wrist clear at -140, left wrist unclear at -165.
+    offset, reason = newcastle.choose_clock_offset(
+        {"left": estimate(-165.0, **UNCLEAR), "right": estimate(-140.0)})
+    assert offset == -140.0 and reason == "clear"
+
+
+def test_no_clear_wrist_means_no_offset():
+    # Like participant 01: both wrists say -540, but -875 fits almost as well.
+    offset, reason = newcastle.choose_clock_offset(
+        {"left": estimate(-540.0, **UNCLEAR), "right": estimate(-540.0, **UNCLEAR)})
+    assert offset is None and "clearly best" in reason
+
+
+def test_wrists_that_disagree_mean_no_offset():
+    # Like participant 45: one wrist says -1230, the other -4330.
+    offset, reason = newcastle.choose_clock_offset(
+        {"left": estimate(-1230.0), "right": estimate(-4330.0, **UNCLEAR)})
+    assert offset is None and "disagree" in reason
+
+
+def test_wrists_may_differ_by_30_seconds_but_not_more():
+    assert newcastle.choose_clock_offset({"left": estimate(-100.0), "right": estimate(-130.0)})[0] == -115.0
+    assert newcastle.choose_clock_offset({"left": estimate(-100.0), "right": estimate(-135.0)})[0] is None
+
+
+def test_an_offset_over_30_minutes_is_not_believed():
+    # Like participant 56: both wrists clearly say +98 minutes. We cannot
+    # explain an offset that large, so we do not act on it.
+    offset, reason = newcastle.choose_clock_offset({"left": estimate(5900.0), "right": estimate(5905.0)})
+    assert offset is None and "too large" in reason
+    assert newcastle.choose_clock_offset({"left": estimate(-1800.0)})[0] == -1800.0     # exactly 30 min is allowed
+
+
+def test_a_wrist_that_could_not_be_checked_means_no_offset():
+    offset, reason = newcastle.choose_clock_offset({"left": estimate(-90.0), "right": estimate(float("nan"))})
+    assert offset is None and "could not be checked" in reason
+
+
+def test_the_stored_table_is_sane():
+    assert len(newcastle.CLOCK_OFFSETS_S) == 13
+    for person_id, offset in newcastle.CLOCK_OFFSETS_S.items():
+        assert person_id == newcastle.person_id_from_number(person_id)       # two digits, like the file names
+        assert abs(offset) <= newcastle.MAX_BELIEVABLE_OFFSET_S
+        assert person_id not in newcastle.EXCLUDED_PEOPLE
+
+
+# ---------------- the loader applies the trusted offsets ----------------
+
+def test_a_person_without_a_trusted_offset_loads_as_recorded_and_is_marked(tmp_path):
+    folder = write_newcastle(tmp_path)                 # fake participant 07 is not in the table
+    night = newcastle.load_night(folder, "07", "left")
+    assert night.info["clock_offset_s"] == 0.0
+    assert night.info["labels_aligned"] is False       # must not be used for 5-second windows
+
+
+def test_a_person_with_a_trusted_offset_gets_it_automatically(tmp_path, monkeypatch):
+    psg_start = datetime.datetime(2015, 3, 10, 22, 0, 0)
+    folder = write_newcastle(tmp_path, bin_start=psg_start - datetime.timedelta(seconds=300), n_pages=250,
+                             wrists=("left", "right"))
+    monkeypatch.setitem(newcastle.CLOCK_OFFSETS_S, "07", -120.0)
+    for wrist in ("left", "right"):                    # both wrists share the person's offset
+        night = newcastle.load_night(folder, "07", wrist)
+        assert night.info["clock_offset_s"] == -120.0 and night.info["labels_aligned"] is True
+
+
+def test_asking_for_the_recorded_clock_of_a_trusted_person_is_marked_not_aligned(tmp_path, monkeypatch):
+    folder = write_newcastle(tmp_path)
+    monkeypatch.setitem(newcastle.CLOCK_OFFSETS_S, "07", -20.0)
+    night = newcastle.load_night(folder, "07", "left", clock_offset_s=0)
+    assert night.info["clock_offset_s"] == 0.0 and night.info["labels_aligned"] is False
+
+
+def test_an_excluded_person_is_refused_with_the_reason(tmp_path, monkeypatch):
+    folder = write_newcastle(tmp_path)
+    monkeypatch.setitem(newcastle.EXCLUDED_PEOPLE, "07", "Made-up reason for the test.")
+    with pytest.raises(DatasetFormatError, match="not used. Made-up reason"):
+        newcastle.load_night(folder, "07", "left")

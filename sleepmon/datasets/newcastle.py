@@ -44,9 +44,20 @@ BEHIND the sleep lab clock by anything from about 15 seconds to about
 19 minutes depending on the person, and for a few people the offset cannot be
 worked out at all. Participant 29's two files are even dated one day apart.
 
-So load_night() takes a clock_offset_s argument. With the default of 0 the
-clocks are trusted exactly as recorded. estimate_clock_offset() runs the
-check for one recording.
+What we do about it (decided 17 November 2026):
+  - For the 13 people whose offset is CLEAR (see choose_clock_offset() for
+    the exact rule), load_night() shifts the motion by that offset. Their
+    labels are then good to roughly half a minute and can be used to train
+    and test the stage model. The offsets are in CLOCK_OFFSETS_S.
+  - The other people load exactly as recorded and are marked
+    info["labels_aligned"] = False. Their labels must NOT be used for 5-second
+    windows. They may still be useful for whole-night numbers.
+  - Participant 29 is not used at all (see EXCLUDED_PEOPLE).
+
+One honest caveat: the offsets were estimated from movement itself (movement
+lines up with "awake"). That gives a model a small head start at spotting
+Awake on these 13 nights, so stage results on Newcastle are a little
+flattering. The results page must say so.
 
 Privacy
 -------
@@ -93,6 +104,76 @@ NEEDED_HEADER_FIELDS = [
 ]
 
 UK = zoneinfo.ZoneInfo("Europe/London")
+
+# ---- Clock offsets (see "Lining up the two clocks" at the top of this file) ----
+
+# A wrist's two estimates must agree this closely to count as the same answer.
+WRISTS_MUST_AGREE_WITHIN_S = 30
+# Offsets larger than this are not believed, however clear they look. A
+# computer clock that nobody set can easily be minutes out. An hour or more
+# points to some other mistake (wrong day, wrong time zone) that we cannot
+# check, so we leave those people out instead of "correcting" them.
+MAX_BELIEVABLE_OFFSET_S = 30 * 60
+
+# How far each person's accelerometer clock is AHEAD of the sleep lab clock,
+# in seconds. Negative = behind. Only people who passed choose_clock_offset()
+# are listed. Produced by:  python scripts/describe_datasets.py --clocks
+# which also re-checks this table against the data.
+CLOCK_OFFSETS_S = {
+    "02": -90.0,
+    "10": -790.0,
+    "17": -907.5,
+    "28": -140.0,
+    "31": -1030.0,
+    "35": -1057.5,
+    "42": -37.5,
+    "48": -40.0,
+    "50": -20.0,
+    "52": -30.0,
+    "53": -245.0,
+    "57": -27.5,
+    "60": -17.5,
+}
+
+# People we do not use at all, and why.
+EXCLUDED_PEOPLE = {
+    "29": "The sleep lab file is dated one day after the accelerometer recording ended, "
+          "and the clock check finds no match even when the date is moved back a day. "
+          "We cannot confirm the accelerometer was worn on the scored night.",
+}
+
+
+def choose_clock_offset(wrist_results):
+    """Decide whether a person's clock offset is clear enough to use.
+
+    wrist_results: {"left": result, "right": result} with the dicts returned
+    by estimate_clock_offset(). One wrist alone is allowed (participant 10).
+
+    The rule, in order:
+      1. At least one wrist must give a CLEAR best offset
+         (clock_check.is_clear: it beats every rival by a set margin).
+      2. If there are two wrists, their best offsets must agree to within
+         30 seconds. Both devices were set from the same computer, so they
+         should show the same offset. If they do not, something is wrong.
+      3. The offset must be 30 minutes or less.
+
+    Returns (offset_s, reason). offset_s is None if the person fails the rule.
+    The offset is the average over the wrists that were clear.
+    """
+    clear = [r["offset_s"] for r in wrist_results.values() if clock_check.is_clear(r)]
+    if not clear:
+        return None, "no wrist gives one clearly best offset"
+
+    all_offsets = [r["offset_s"] for r in wrist_results.values()]
+    if not np.all(np.isfinite(all_offsets)):
+        return None, "one wrist could not be checked"
+    if max(all_offsets) - min(all_offsets) > WRISTS_MUST_AGREE_WITHIN_S:
+        return None, "the two wrists disagree"
+
+    offset = float(np.mean(clear))
+    if abs(offset) > MAX_BELIEVABLE_OFFSET_S:
+        return None, "the offset is too large to believe"
+    return offset, "clear"
 
 
 # --------------------------------------------------------------------------
@@ -405,7 +486,7 @@ def find_bin_file(folder, person_id, wrist):
     return matches[0]
 
 
-def load_night(folder, person_id, wrist="left", clock_offset_s=0.0):
+def load_night(folder, person_id, wrist="left", clock_offset_s=None):
     """Load one person's lab night from one wrist and return it as a Night.
 
     wrist: "left" or "right". (Participant 10 has no right wrist file.)
@@ -414,12 +495,26 @@ def load_night(folder, person_id, wrist="left", clock_offset_s=0.0):
 
     clock_offset_s: how far the accelerometer clock is AHEAD of the sleep lab
     clock, in seconds (negative = behind). The motion is moved onto the sleep
-    lab clock by this amount. 0 trusts the clocks as recorded.
+    lab clock by this amount.
+      - Leave it out (None) for normal use: people listed in CLOCK_OFFSETS_S
+        get their offset, everyone else is loaded as recorded.
+      - Pass a number (0 = as recorded) only for checking and experiments.
+
+    Read info["labels_aligned"] on the result: only if it is True may the
+    labels be used for 5-second windows.
     """
     person_id = person_id_from_number(person_id)
     if wrist not in ("left", "right"):
         raise ValueError("wrist must be 'left' or 'right'.")
     name = f"newcastle person {person_id} {wrist} wrist"
+
+    if clock_offset_s is None:
+        if person_id in EXCLUDED_PEOPLE:
+            raise DatasetFormatError(f"{name}: this participant is not used. {EXCLUDED_PEOPLE[person_id]}")
+        clock_offset_s = CLOCK_OFFSETS_S.get(person_id, 0.0)
+    # The labels count as lined up only when the person has a trusted offset
+    # in the table AND that is the offset actually applied.
+    labels_aligned = person_id in CLOCK_OFFSETS_S and float(clock_offset_s) == CLOCK_OFFSETS_S[person_id]
 
     start, stages_lab = read_psg(os.path.join(folder, "psg", f"mecsleep{person_id}_psg.txt"))
     end = start + datetime.timedelta(seconds=len(stages_lab) * config.LABEL_EPOCH_SECONDS)
@@ -461,6 +556,7 @@ def load_night(folder, person_id, wrist="left", clock_offset_s=0.0):
             "diagnosis": person["diagnosis"],
             "wrist": wrist,
             "clock_offset_s": float(clock_offset_s),
+            "labels_aligned": labels_aligned,
             "source_rate_hz": median_sampling_rate(time_s),
             "rows_removed": details["samples_dropped_out_of_order"],
             "pages_skipped": details["pages_skipped"],

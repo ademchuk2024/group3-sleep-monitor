@@ -99,3 +99,45 @@ def test_too_little_motion_gives_no_estimate():
     movement = clock_check.movement_in_bins(time[keep], accel[keep], 0.0, len(stages) * 30)
     result = clock_check.estimate_clock_offset(movement, 0.0, stages == labels.LAB_WAKE, max_offset_s=600)
     assert np.isnan(result["offset_s"])
+
+
+# ---------------- is the estimate clear enough to act on? ----------------
+
+def estimate(offset, match, runner_up_match):
+    """A hand-made result, shaped like the output of estimate_clock_offset()."""
+    return {"offset_s": offset, "correlation": match, "correlation_at_zero": 0.0,
+            "runner_up_offset_s": offset - 600.0, "runner_up_correlation": runner_up_match}
+
+
+def test_peak_margin_is_best_minus_runner_up():
+    assert clock_check.peak_margin(estimate(-90.0, 0.40, 0.25)) == pytest.approx(0.15)
+
+
+def test_one_clearly_best_offset_is_clear():
+    assert clock_check.is_clear(estimate(-90.0, 0.40, 0.25)) is True
+
+
+def test_two_offsets_that_fit_about_equally_are_not_clear():
+    # Like Walch person 8692923: -1060 s scored 0.32 and 0 s scored 0.31.
+    assert clock_check.is_clear(estimate(-1060.0, 0.32, 0.31)) is False
+
+
+def test_the_margin_has_to_reach_the_limit():
+    limit = clock_check.MIN_CLEAR_MARGIN
+    assert clock_check.is_clear(estimate(0.0, 0.30 + limit + 0.001, 0.30)) is True
+    assert clock_check.is_clear(estimate(0.0, 0.30 + limit - 0.001, 0.30)) is False
+
+
+def test_no_estimate_is_never_clear():
+    nothing = {"offset_s": float("nan"), "correlation": float("nan"), "correlation_at_zero": float("nan"),
+               "runner_up_offset_s": float("nan"), "runner_up_correlation": float("nan")}
+    assert clock_check.is_clear(nothing) is False
+    # A best offset with nothing to compare it to is not proof either.
+    assert clock_check.is_clear(estimate(-90.0, 0.40, float("nan"))) is False
+
+
+def test_a_real_known_offset_passes_the_rule():
+    time, accel, stages = night_with_wake_bouts(shift_s=-300.0)
+    movement = clock_check.movement_in_bins(time, accel, -1800.0, len(stages) * 30 + 1800.0)
+    result = clock_check.estimate_clock_offset(movement, -1800.0, stages == labels.LAB_WAKE, max_offset_s=1500)
+    assert clock_check.is_clear(result)
