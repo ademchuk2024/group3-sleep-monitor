@@ -10,7 +10,7 @@ to D1 to D6.
 | 3 Models | Done on the laptop data and approved. See `docs/RESULTS.md`. The full-data run is ready in `notebooks/train_models.ipynb` |
 | 4 Post-processing and screening | Done and approved (17 Nov 2026). See `docs/POSTPROCESSING.md` and `docs/RESULTS_JSON.md` |
 | 5 Dashboard | Done and approved. `app.py`, `sleepmon/dashboard.py` |
-| Wrap-up | Done, waiting for Anna's review. `README.md`, `docs/REQUIREMENTS.md`, `docs/RESULTS.md` |
+| Wrap-up | Done and merged into main (PR #1, 17 Nov 2026). `README.md`, `docs/REQUIREMENTS.md`, `docs/RESULTS.md` |
 | Still open | Colab run on all of BIDSleep (needs the code pushed to GitHub); team answers on the heart-rate model and a Transformer (`docs/RESULTS.md`); a short usability session with real users (U.1) |
 
 Run the tests from the project folder with `python -m pytest`.
