@@ -8,7 +8,7 @@ to D1 to D6.
 | 1 Data | Done and approved. Newcastle: 13 people shifted and used for stage labels, 27 for whole-night numbers (see `docs/DATASETS.md`) |
 | 2 Signal processing | Done and approved. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
 | 3 Models | Done on the laptop data and approved. See `docs/RESULTS.md`. The full-data run is ready in `notebooks/train_models.ipynb` |
-| 4 Post-processing and screening | Built and tested. Thresholds proposed, waiting for Anna's approval. See `docs/POSTPROCESSING.md` |
+| 4 Post-processing and screening | Done. Thresholds approved by Anna on 17 Nov 2026. Waiting for the go-ahead for Phase 5. See `docs/POSTPROCESSING.md` and `docs/RESULTS_JSON.md` |
 | 5 Dashboard | Not started |
 
 Run the tests from the project folder with `python -m pytest`.

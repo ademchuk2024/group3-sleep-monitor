@@ -43,9 +43,9 @@ MIN_SOURCE_RATE_HZ = 2 * SPECTROGRAM_MAX_HZ
 SPECTROGRAM_FLOOR = 1e-9
 
 # A prediction with confidence below this number gets a "low confidence" flag.
-LOW_CONFIDENCE_THRESHOLD = 0.50     # PROPOSED, waiting for Anna's approval (docs/POSTPROCESSING.md)
+LOW_CONFIDENCE_THRESHOLD = 0.50     # approved by Anna 17 Nov 2026 (docs/POSTPROCESSING.md)
 
-# ---- Post-processing (sleepmon/postprocess.py). PROPOSED, waiting for approval. ----
+# ---- Post-processing (sleepmon/postprocess.py). Approved by Anna 17 Nov 2026. ----
 # Chosen on the validation people by scripts/tune_postprocess.py.
 POSTPROCESS_AVERAGE_WINDOWS = 6    # average each window's likelihoods with this many neighbours
 POSTPROCESS_MIN_RUN_WINDOWS = 6    # stage runs shorter than this are handed to a neighbour
@@ -110,7 +110,7 @@ STAGE_COLORS = {
     "deep": "#3A5FC8",   # deep blue
 }
 
-# ---- Screening (sleepmon/screening.py). PROPOSED, waiting for Anna's approval. ----
+# ---- Screening (sleepmon/screening.py). Approved by Anna 17 Nov 2026. ----
 # Below this much usable recording there is no screening result, only a message.
 # The shortest healthy reference nights (Walch, lab) are about 3.5 hours.
 SCREENING_MIN_USABLE_HOURS = 3

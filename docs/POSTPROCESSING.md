@@ -1,7 +1,7 @@
 # Post-processing and screening: what it does and why
 
-**Status: thresholds PROPOSED, waiting for Anna's approval.** They are in
-`config.py`, marked "PROPOSED".
+**Status: thresholds approved by Anna on 17 November 2026, as proposed
+(including 0.50 for low confidence).** They are in `config.py`.
 
 This covers requirements F.12 (flag low-confidence guesses) and F.13 (look
 at neighbouring windows, smooth out unrealistic changes), plus the summary
@@ -23,7 +23,7 @@ python scripts/build_reference.py data/models/sequence-default-magnitude-common_
 
 ## The thresholds at a glance
 
-| Setting | Proposed | Where it comes from |
+| Setting | Chosen | Where it comes from |
 |---|---|---|
 | Smoothing: average over | 6 windows (30 s) | The length of one expert scoring period |
 | Smoothing: shortest stage run kept | 6 windows (30 s) | The shortest run an expert can score |
@@ -44,7 +44,7 @@ screening counts them.
 |---|---|---|---|
 | Expert labels | | | 5.2 |
 | No smoothing | 0.519 | 0.438 | 9.0 |
-| **Proposed (30 s, 30 s)** | **0.519** | **0.439** | **5.7** |
+| **Chosen (30 s, 30 s)** | **0.519** | **0.439** | **5.7** |
 | Strongest tried (2 min, 1 min) | 0.522 | 0.442 | 4.4 |
 
 Smoothing hardly changes the scores, because the LSTM already reads the
@@ -83,7 +83,7 @@ right. That becomes the confidence the app shows: "of answers like this on
 people the model never saw, X% were right". It is stored in
 `models/stage_model/calibration.json`.
 
-**Proposed threshold: 0.50.** A window is flagged "uncertain" when answers
+**Chosen threshold: 0.50.** A window is flagged "uncertain" when answers
 like it were wrong more often than right.
 
 | Calibrated threshold | Flagged (validation) | Right among the rest | Right among flagged |
@@ -97,13 +97,13 @@ like it were wrong more often than right.
 the time, and the flagged ones only 28%. So the flag does separate trustworthy
 answers from untrustworthy ones on new people.
 
-**What this means for the page, and a decision for you:**
+**What this means for the page:**
 the best that any Deep answer reached was 39% right, and any REM answer 30%.
 **At 0.50, every Deep and REM answer is flagged uncertain.** That is honest
-about this model. The timeline would still show the model's best guess, marked
+about this model. The timeline still shows the model's best guess, marked
 as uncertain, rather than hiding it. The alternative is 0.30, which flags only
 the worst 12% and leaves many Deep and REM answers unflagged, even though most
-of them are wrong. I recommend 0.50.
+of them are wrong. 0.50 was chosen.
 
 ## 3. Night summary
 
