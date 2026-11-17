@@ -48,7 +48,7 @@ Uploads stay in memory only. They are never saved to disk.
 | `model.py` | **Placeholder** model: `predict_stages(spectrograms)` returns fake stages + confidence |
 | `app.py` | The web page (Streamlit) |
 | `.streamlit/config.toml` | Page colors and fonts (hidden folder: press `Cmd + Shift + .` in Finder to see it) |
-| `sample_data/make_sample.py` | Makes a fake 30-minute recording, `sample_night.csv` |
+| `sample_data/make_sample.py` | Makes a made-up 7-hour night in memory for the sample button (not real data) |
 | `requirements.txt` | The Python packages the app needs |
 
 ## CSV format
@@ -103,12 +103,6 @@ Install the packages:
 pip install -r requirements.txt
 ```
 
-Make the sample file (only needed once):
-
-```bash
-python sample_data/make_sample.py
-```
-
 ## Run the app
 
 Every time you want to use it, open Terminal, go to the folder, and run:
@@ -121,7 +115,7 @@ source .venv/bin/activate
 streamlit run app.py
 ```
 
-Your browser opens at http://localhost:8501. Click **Try sample night**, or upload a CSV.
+Your browser opens at http://localhost:8501. Click **Try the sample night**, or upload a CSV.
 
 To stop the app, click the Terminal window and press `Ctrl + C`.
 

@@ -49,13 +49,14 @@ def test_no_dataset_style_files_are_tracked_anywhere():
     assert found == [], f"these look like data files: {found}"
 
 
-def test_the_only_tracked_csv_is_the_generated_sample():
+def test_no_csv_is_tracked():
+    # Recordings are never committed. The sample night is generated in memory.
     csvs = [path for path in tracked_files() if path.lower().endswith(".csv")]
-    assert csvs == ["sample_data/sample_night.csv"]
+    assert csvs == []
 
 
 def test_no_tracked_file_is_suspiciously_large():
-    limit = 10 * 1024 * 1024    # 10 MB. The generated sample night is about 4 MB.
+    limit = 10 * 1024 * 1024    # 10 MB. The largest tracked file is the 0.5 MB model.
     large = [path for path in tracked_files()
              if os.path.exists(os.path.join(PROJECT_FOLDER, path))
              and os.path.getsize(os.path.join(PROJECT_FOLDER, path)) > limit]

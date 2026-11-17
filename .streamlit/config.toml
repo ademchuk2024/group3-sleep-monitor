@@ -13,10 +13,9 @@ codeBackgroundColor = "#19191b"
 font = "sans-serif"                  # fonts bundled with Streamlit, work offline
 codeFont = "monospace"
 baseRadius = "8px"
-
-[client]
-toolbarMode = "minimal"              # hide the developer menu
-
 # Calmer headings: page title, then section titles (h1..h3).
 headingFontWeights = [500, 500, 500]
 headingFontSizes = ["2rem", "1.5rem", "1.25rem"]
+
+[client]
+toolbarMode = "minimal"              # hide the developer menu

@@ -65,7 +65,7 @@ def runs(stages):
     edges = np.flatnonzero(stages[1:] != stages[:-1]) + 1
     starts = np.concatenate([[0], edges])
     lengths = np.diff(np.concatenate([starts, [len(stages)]]))
-    return [(int(s), int(n), int(stages[s])) for s, n in zip(starts, lengths)]
+    return [(int(s), int(n), stages[s].item()) for s, n in zip(starts, lengths)]
 
 
 def remove_short_runs(stages, proba, min_run, protected):

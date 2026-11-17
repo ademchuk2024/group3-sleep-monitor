@@ -8,8 +8,8 @@ to D1 to D6.
 | 1 Data | Done and approved. Newcastle: 13 people shifted and used for stage labels, 27 for whole-night numbers (see `docs/DATASETS.md`) |
 | 2 Signal processing | Done and approved. See `docs/SIGNAL_PROCESSING.md` and `docs/CSV_FORMAT.md` |
 | 3 Models | Done on the laptop data and approved. See `docs/RESULTS.md`. The full-data run is ready in `notebooks/train_models.ipynb` |
-| 4 Post-processing and screening | Done. Thresholds approved by Anna on 17 Nov 2026. Waiting for the go-ahead for Phase 5. See `docs/POSTPROCESSING.md` and `docs/RESULTS_JSON.md` |
-| 5 Dashboard | Not started |
+| 4 Post-processing and screening | Done and approved (17 Nov 2026). See `docs/POSTPROCESSING.md` and `docs/RESULTS_JSON.md` |
+| 5 Dashboard | Done, waiting for Anna's go-ahead for the wrap-up. `app.py`, `sleepmon/dashboard.py` |
 
 Run the tests from the project folder with `python -m pytest`.
 
@@ -281,6 +281,14 @@ and limits in `docs/RESULTS.md`.
    data" button, nothing written to disk, nothing from the upload in logs.
 9. Tests with Streamlit's test tool: every error message, the sample button,
    the report download, and a test that the upload path writes no files.
+
+**Outcome (17 Nov 2026):** all of the above is done. Changes from the plan:
+the sample night (about 7 hours, made-up) is generated in memory instead of
+being stored, because a full night is about 40 MB, so no CSV is tracked in git
+any more. The PDF has two pages: the result and the numbers with the
+timeline, then the flagged periods and how it was worked out. Recording
+and transfer status (U.3) belong to the wearable; the page shows the
+processing status.
 
 ### Wrap-up
 
